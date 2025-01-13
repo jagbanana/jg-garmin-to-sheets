@@ -1,4 +1,4 @@
-# Garmin Data Sync Tool
+# Garmin Data to Google Sheets Utility
 
 A Docker-based command-line tool that pulls daily health metrics from Garmin Connect and stores them in Google Sheets.
 
