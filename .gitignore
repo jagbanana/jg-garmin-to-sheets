@@ -1,0 +1,18 @@
+# Sensitive files
+.env
+credentials/
+*.pickle
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs
+logs/
+*.log
+
+# Environment
+.venv/
+venv/
+ENV/
