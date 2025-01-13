@@ -11,7 +11,7 @@ Running the utility in PowerShell:
 *Simple command line utility to pull daily data from Garmin and store it in a Google Sheet.*
 
 The result:
-![Your data shows in a Google Sheet](screenshots/screenshot2sheet.png)
+![Your data shows in a Google Sheet](screenshots/screenshot2sheets.png)
 *Your Garmin data is now in a Google Sheet ready for additional analysis.*
 
 ## Prerequisites
