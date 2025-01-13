@@ -113,7 +113,7 @@ The tool syncs the following daily metrics from Garmin Connect:
 - Training Status
 - VO2 Max (Running/Cycling)
 - Intensity Minutes
-- Activity Counts and Distances (Running, Cycling, Strength, Cardio)
+- Activity Counts and Distances/Durations (Running, Cycling, Strength, Cardio)
 
 These metrics were chosen specifically because they relate to long-term health and longevity planning.
 
