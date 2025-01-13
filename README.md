@@ -110,6 +110,7 @@ The tool syncs the following daily metrics from Garmin Connect:
 - Active/Resting Calories
 - Resting Heart Rate
 - Average Stress
+- Training Status
 - VO2 Max (Running/Cycling)
 - Intensity Minutes
 - Activity Counts and Distances (Running, Cycling, Strength, Cardio)
