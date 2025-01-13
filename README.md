@@ -81,6 +81,8 @@ Replace the dates with your desired date range. The tool can run a year of dates
 
 ### Running Without Docker
 
+These steps are only if you prefer not to use Docker. This is more complex and not tested.
+
 1. Create a virtual environment:
 ```bash
 python -m venv venv
