@@ -16,10 +16,11 @@ The result:
 
 ## Prerequisites
 
-- Docker installed on your system
+- Docker installed on your system or Python 3.9 or higher (if running without Docker)
 - A Garmin Connect account
 - A Google account with access to Google Sheets
-- Python 3.9 or higher (if running without Docker)
+
+Note: some users have reported challenges with the refreshing auth tokens in the Docker version of this app. If you face this, instead run the app directly with Python (see below after step 4).
 
 ## Setup Instructions
 
