@@ -137,7 +137,7 @@ class GarminClient:
             # Get summary metrics
             active_calories = summary.get('activeKilocalories')
             resting_calories = summary.get('bmrKilocalories')
-            intensity_minutes = (summary.get('moderateIntensityMinutes', 0) or 0) + (summary.get('vigorousIntensityMinutes', 0) or 0)
+            intensity_minutes = (summary.get('moderateIntensityMinutes', 0) or 0) + (2 * (summary.get('vigorousIntensityMinutes', 0) or 0))
             resting_heart_rate = summary.get('restingHeartRate')
             average_stress = summary.get('averageStressLevel')
 
