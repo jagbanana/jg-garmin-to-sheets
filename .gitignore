@@ -2,6 +2,8 @@
 .env
 credentials/
 *.pickle
+/memory-bank/
+Prod_Requirements.md
 
 # Python
 __pycache__/
