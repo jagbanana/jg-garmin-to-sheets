@@ -1,8 +1,13 @@
 # Garmin Data to Google Sheets Utility
 
-A Docker-based command-line tool that pulls daily health metrics from Garmin Connect and stores them in Google Sheets.
+A command-line tool that pulls daily health metrics from Garmin Connect and stores them in Google Sheets.
 
 I created this utility to feed data into an LLM (e.g. Claude, ChatGPT, or Gemini) so that I could gain insights for improving my health and longevity.
+
+You can run it with either Python installed or as a Docker container.
+
+- Securely store your credentials in the .env file.
+- When you first run the application, it will launch your browser, allowing you to link your Google account to connect to Sheets.
 
 ## Screenshots
 
@@ -16,11 +21,9 @@ The result:
 
 ## Prerequisites
 
-- Docker installed on your system or Python 3.9 or higher (if running without Docker)
+- Docker installed on your system -or- Python 3.9 or higher
 - A Garmin Connect account
 - A Google account with access to Google Sheets
-
-Note: some users have reported challenges with the refreshing auth tokens in the Docker version of this app. If you face this, instead run the app directly with Python (see below after step 4).
 
 ## Setup Instructions
 
@@ -98,7 +101,7 @@ docker build -t garmin-sync .
 
 ### Running Without Docker
 
-These steps are only if you prefer not to use Docker. This is more complex and not tested.
+If you prefer to not use Docker, you can run directly with Python.
 
 1. Create a virtual environment:
 ```bash
@@ -145,7 +148,7 @@ These metrics were chosen specifically because they relate to long-term health a
 
 1. Authentication Issues:
    - Ensure your Garmin credentials are correct in `.env`
-   - For Google Sheets issues, delete `token.pickle` and try again
+   - For Google Sheets connection issues, delete `token.pickle` and try again. This will trigger the app to launch your browser and reconnect your Google account.
 
 2. Permission Issues:
    - Ensure the credentials directory is mounted correctly in Docker
@@ -156,10 +159,6 @@ These metrics were chosen specifically because they relate to long-term health a
 - Never commit your `.env` file or anything in the `credentials` directory
 - Keep your Google client secret and credentials secure
 - The tool uses environment variables for all sensitive data
-
-## Known Issues
-
-Data prior to May 14, 2023 does not work with this tool yet. If you put earlier dates, the utility will just create blank rows.
 
 ## License
 
