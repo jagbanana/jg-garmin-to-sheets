@@ -1,6 +1,6 @@
 # Garmin Data to Google Sheets Utility
 
-A command-line tool that pulls daily health metrics from Garmin Connect and stores them in Google Sheets.
+This is a command-line tool that pulls daily health metrics from Garmin Connect and stores them in Google Sheets.
 
 I created this utility to feed data into an LLM (e.g. Claude, ChatGPT, or Gemini) so that I could gain insights for improving my health and longevity.
 
@@ -18,6 +18,16 @@ Running the utility in PowerShell:
 The result:
 ![Your data shows in a Google Sheet](screenshots/screenshot2sheets.png)
 *Your Garmin data is now in a Google Sheet ready for additional analysis.*
+
+## Installation Summary
+
+1. Download the source code
+2. Install Python or Docker
+3. Setup your Google Sheets API
+4. Run the app (it will launch your browser to connect to your Google account securely)
+5. Send your Garmin data to a Google Sheet!
+
+Detailed steps below.
 
 ## Prerequisites
 

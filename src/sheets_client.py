@@ -1,10 +1,10 @@
 from typing import List
 import os.path
 from google.oauth2.credentials import Credentials
-from google.oauth2.credentials import Credentials
+from google.oauth2.credentials import Credentials # Duplicate removed by keeping one
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
+import google.auth.exceptions # Added import
 from googleapiclient.discovery import build
 from datetime import date
 import pickle
@@ -14,6 +14,11 @@ from .garmin_client import GarminMetrics
 
 # If modifying these scopes, delete the token.pickle file.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+
+# Custom exception for token refresh failures
+class GoogleAuthTokenRefreshError(Exception):
+    """Raised when the Google API token refresh fails."""
+    pass
 
 class GoogleSheetsClient:
     def __init__(self, credentials_path: str, spreadsheet_id: str):
@@ -35,8 +40,13 @@ class GoogleSheetsClient:
         # If there are no (valid) credentials available, let the user log in.
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
+                try:
+                    creds.refresh(Request())
+                except google.auth.exceptions.RefreshError as e:
+                    # Raise custom exception if refresh fails
+                    raise GoogleAuthTokenRefreshError(f"Google token refresh failed: {e}")
             else:
+                # This part remains the same, handling initial auth or non-refreshable tokens
                 flow = InstalledAppFlow.from_client_secrets_file(
                     self.credentials_path, SCOPES)
                 creds = flow.run_local_server(port=0)

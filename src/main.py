@@ -4,11 +4,12 @@ from datetime import datetime, timedelta, date # Ensure date is imported
 import asyncio
 from typing import Optional
 import os
+from pathlib import Path # Added import
 from dotenv import load_dotenv
 import logging
 
 from src.garmin_client import GarminClient
-from src.sheets_client import GoogleSheetsClient
+from src.sheets_client import GoogleSheetsClient, GoogleAuthTokenRefreshError # Added import
 import re # Added for regex matching
 
 # Set up logging
@@ -87,44 +88,73 @@ async def sync():
             except ValueError:
                 print(f"Invalid date format. Please use {date_format}.")
 
-        # Initialize clients using selected/entered data
+        # Initialize Garmin client
         logger.info("Initializing Garmin client...")
         garmin_client = GarminClient(email, password)
-        
-        logger.info("Initializing Google Sheets client...")
-        sheets_client = GoogleSheetsClient(
-            credentials_path='credentials/client_secret.json',
-            spreadsheet_id=sheets_id
-        )
 
         logger.info(f"Starting sync from {start_date.strftime(date_format)} to {end_date.strftime(date_format)}")
-
-        # Dates are already date objects from input validation
-        start = start_date
-        end = end_date
 
         # Authenticate with Garmin
         logger.info("Authenticating with Garmin...")
         await garmin_client.authenticate()
-        
+
         # Get metrics for each day in the date range
+        logger.info("Fetching metrics from Garmin...")
         metrics = []
-        current_date = start
+        current_date = start_date # Use validated start_date
+        end = end_date           # Use validated end_date
         while current_date <= end:
             logger.info(f"Fetching metrics for {current_date}")
             daily_metrics = await garmin_client.get_metrics(current_date)
             metrics.append(daily_metrics)
             current_date += timedelta(days=1)
-            
-        # Update Google Sheet with the metrics
-        logger.info("Updating Google Sheet...")
-        sheets_client.update_metrics(metrics)
-        
-        logger.info("Sync completed successfully!")
 
+        # Initialize Google Sheets client and update sheet (within inner try/except)
+        try:
+            logger.info("Initializing Google Sheets client...")
+            sheets_client = GoogleSheetsClient(
+                credentials_path='credentials/client_secret.json',
+                spreadsheet_id=sheets_id
+            )
+
+            logger.info("Updating Google Sheet...")
+            sheets_client.update_metrics(metrics)
+
+            logger.info("Sync completed successfully!")
+
+        except GoogleAuthTokenRefreshError as auth_error:
+            logger.warning(f"Google authentication error: {auth_error}")
+            print("\n" + "="*30)
+            print(" Google Authentication Issue")
+            print("="*30)
+            response = input("Google authentication token.pickle may be expired or invalid.\nDo you want to delete it and re-authenticate on the next run? [Y/N]: ").strip().lower()
+
+            if response == 'y':
+                logger.info("User chose to re-authenticate. Deleting token.pickle...")
+                token_path = Path('credentials/token.pickle')
+                if token_path.exists():
+                    try:
+                        token_path.unlink()
+                        logger.info(f"Deleted token file: {token_path}")
+                        print(f"\nToken file ({token_path}) has been removed.")
+                        print("Please re-run the application to re-authenticate with Google.")
+                    except OSError as e:
+                        logger.error(f"Error deleting token file {token_path}: {e}")
+                        print(f"\nError deleting token file: {e}. Please delete it manually and re-run.")
+                else:
+                    logger.warning(f"Token file not found at {token_path}, cannot delete.")
+                    print("\nToken file not found. Please re-run the application to authenticate.")
+                sys.exit(0) # Exit gracefully after handling token deletion
+            else:
+                logger.info("User chose not to re-authenticate.")
+                print("\nAuthentication is required to update Google Sheets. Exiting.")
+                sys.exit(1) # Exit with error code as user declined
+
+    # This is the general exception handler for the outer try block (starting line 29)
     except Exception as e:
-        logger.error(f"An error occurred: {str(e)}")
-        raise
+        logger.error(f"An unexpected error occurred during the sync process: {str(e)}", exc_info=True) # Log traceback
+        print(f"\nAn unexpected error occurred: {e}")
+        sys.exit(1) # Exit with error code for general errors
 
 def load_user_profiles():
     """
