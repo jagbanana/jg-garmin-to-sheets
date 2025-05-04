@@ -44,27 +44,37 @@ cd garmin-sync
 
 ### 3. Configure Environment Variables
 
-1. Copy the example environment file:
-```bash
-cp .env.example .env
-```
+1.  **Copy the Example File:** Create a `.env` file by copying the example:
+    ```bash
+    cp .env.example .env
+    ```
 
-2. Edit `.env` with your credentials:
-```
-# Garmin Connect credentials
-GARMIN_EMAIL=your.email@example.com
-GARMIN_PASSWORD=your_password
+2.  **Edit `.env`:** Open the `.env` file and populate it with the details for each user profile you want to sync. Follow the `USER<N>_` prefix convention shown in `.env.example`:
 
-# Google Sheets
-GOOGLE_SHEETS_ID=your_sheet_id
-GOOGLE_CREDENTIALS_DIR=credentials
-GOOGLE_CLIENT_SECRET_FILE=client_secret.json
-GOOGLE_TOKEN_FILE=token.pickle
-```
+    ```dotenv
+    # User Profile 1
+    USER1_GARMIN_EMAIL=user1@example.com
+    USER1_GARMIN_PASSWORD=password1
+    USER1_SHEET_ID=sheet_id_1
 
-To get your Google Sheets ID:
-1. Create a new Google Sheet
-2. The ID is in the URL: `https://docs.google.com/spreadsheets/d/[THIS-IS-YOUR-SHEET-ID]/edit`
+    # User Profile 2
+    USER2_GARMIN_EMAIL=user2@example.com
+    USER2_GARMIN_PASSWORD=password2
+    USER2_SHEET_ID=sheet_id_2
+    # Add more users as needed following the USER<N>_ prefix pattern
+
+    # Google API Credentials (shared, point to your downloaded files)
+    GOOGLE_CLIENT_SECRET_PATH=credentials/client_secret.json
+    GOOGLE_TOKEN_PATH=credentials/token.pickle
+    ```
+
+    *   Replace the example emails, passwords, and sheet IDs with your actual Garmin Connect credentials and the Google Sheet ID for *each user*.
+    *   The `GOOGLE_CLIENT_SECRET_PATH` and `GOOGLE_TOKEN_PATH` usually don't need changing if you followed Step 2 (Google Sheets API Setup).
+
+3.  **Get Google Sheet IDs:** For each user's sheet:
+    *   Create a new Google Sheet or use an existing one.
+    *   The Sheet ID is part of the URL: `https://docs.google.com/spreadsheets/d/[THIS-IS-YOUR-SHEET-ID]/edit`
+    *   Copy this ID into the corresponding `USER<N>_SHEET_ID` field in your `.env` file.
 
 ### 4. Build and Run with Docker
 
@@ -73,12 +83,18 @@ To get your Google Sheets ID:
 docker build -t garmin-sync .
 ```
 
-2. Run the sync tool:
-```bash
-docker run -v $(pwd)/credentials:/app/credentials -v $(pwd)/.env:/app/.env garmin-sync --start-date 2024-01-01 --end-date 2024-01-31
-```
+2.  **Run the Sync Tool:**
+    ```bash
+    # Make sure your .env file is in the current directory
+    # Mount the credentials directory and the .env file
+    docker run -v $(pwd)/credentials:/app/credentials -v $(pwd)/.env:/app/.env garmin-sync
+    ```
+    The tool will now run interactively:
+    *   It will list the user profiles found in your `.env` file and prompt you to select one.
+    *   It will then ask for the `Start Date` (YYYY-MM-DD format).
+    *   Finally, it will ask for the `End Date` (YYYY-MM-DD format).
 
-Replace the dates with your desired date range. The tool can run a year of dates at a time.
+    The data for the selected user and date range will be synced to their specified Google Sheet.
 
 ### Running Without Docker
 
@@ -95,10 +111,17 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-3. Run the sync tool:
-```bash
-python -m src.main --start-date 2024-01-01 --end-date 2024-01-31
-```
+3.  **Run the Sync Tool:**
+    ```bash
+    # Make sure your .env file is in the project root directory
+    python -m src.main
+    ```
+    The tool will now run interactively:
+    *   It will list the user profiles found in your `.env` file and prompt you to select one.
+    *   It will then ask for the `Start Date` (YYYY-MM-DD format).
+    *   Finally, it will ask for the `End Date` (YYYY-MM-DD format).
+
+    The data for the selected user and date range will be synced to their specified Google Sheet.
 
 ## Available Metrics
 

@@ -1,6 +1,5 @@
 from typing import List
 import os.path
-import os
 from google.oauth2.credentials import Credentials
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -18,19 +17,10 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
 class GoogleSheetsClient:
     def __init__(self, credentials_path: str, spreadsheet_id: str):
-    self.spreadsheet_id = spreadsheet_id
-    
-    # Add environment variable handling here
-    credentials_dir = os.getenv('GOOGLE_CREDENTIALS_DIR', 'credentials')
-    client_secret_file = os.getenv('GOOGLE_CLIENT_SECRET_FILE', 'client_secret.json')
-    token_file = os.getenv('GOOGLE_TOKEN_FILE', 'token.pickle')
-
-    credentials_path = Path(credentials_dir) / client_secret_file
-    token_path = Path(credentials_dir) / token_file
-    
-    self.credentials_path = str(credentials_path)  # Convert Path to string
-    self.credentials = self._get_credentials()
-    self.service = build('sheets', 'v4', credentials=self.credentials)
+        self.spreadsheet_id = spreadsheet_id
+        self.credentials_path = credentials_path
+        self.credentials = self._get_credentials()
+        self.service = build('sheets', 'v4', credentials=self.credentials)
 
     def _get_credentials(self) -> Credentials:
         """Gets valid user credentials from storage or initiates OAuth2 flow."""
@@ -132,6 +122,6 @@ class GoogleSheetsClient:
         self.service.spreadsheets().values().update(
             spreadsheetId=self.spreadsheet_id,
             range=range_name,
-            valueInputOption='RAW',
+            valueInputOption='USER_ENTERED',
             body={'values': rows}
         ).execute()
