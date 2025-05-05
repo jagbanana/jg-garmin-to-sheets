@@ -1,175 +1,197 @@
-# Garmin Data to Google Sheets Utility
+# 🚀 GarminGo - Your Garmin Data, Simplified! 📄📈
 
-This is a command-line tool that pulls daily health metrics from Garmin Connect and stores them in Google Sheets.
+Effortlessly pull your daily health metrics from Garmin Connect and save them directly to a user-friendly CSV file or Google Sheets.
 
 I created this utility to feed data into an LLM (e.g. Claude, ChatGPT, or Gemini) so that I could gain insights for improving my health and longevity.
 
-You can run it with either Python installed or as a Docker container.
+Even if you aren't technical, getting your data as a CSV is super easy!
 
-- Securely store your credentials in the .env file.
-- When you first run the application, it will launch your browser, allowing you to link your Google account to connect to Sheets.
+**🔒 Security & Privacy First:**
 
-## Screenshots
+*   **Open Source:** GarminGo's code is simple and viewable by anyone.
+*   **Local Credentials:** Your Garmin login details are stored securely on *your* computer in the `.env` file (which you create).
+*   **Google Integration (Optional):** If using Google Sheets, the app securely links your Google account via your browser the first time you run it for Sheets output.
 
-Running the utility in PowerShell:
+## ✨ Screenshots
+
+**Running the App:**
 ![Running the utility in PowerShell](screenshots/screenshot1powershell.png)
-*Simple command line utility to pull daily data from Garmin and store it in a Google Sheet.*
+*A simple interactive menu guides you.*
 
-The result:
+**Google Sheets Output (Optional):**
 ![Your data shows in a Google Sheet](screenshots/screenshot2sheets.png)
-*Your Garmin data is now in a Google Sheet ready for additional analysis.*
+*Your Garmin data ready for analysis.*
 
-## Installation Summary
+---
 
-1. Download the source code
-2. Install Python or Docker
-3. Setup your Google Sheets API
-4. Run the app (it will launch your browser to connect to your Google account securely)
-5. Send your Garmin data to a Google Sheet!
+## 🚀 Quick Start: Get Your Data as a CSV File
 
-Detailed steps below.
+This is the easiest way to get started and export your Garmin data.
 
-## Prerequisites
+**1. 🐍 Install Python:**
+   *   Make sure you have Python 3.9 or newer installed. You can download it from [python.org](https://www.python.org/downloads/).
 
-- Docker installed on your system -or- Python 3.9 or higher
-- A Garmin Connect account
-- A Google account with access to Google Sheets
+**2. 📄 Get the Code:**
+   *   Go to the GarminGo GitHub repository page.
+   *   Click the green "Code" button and select **"Download ZIP"**.
+   *   Extract the downloaded ZIP file to a folder on your computer (e.g., `C:\GarminGo` or `/Users/YourName/GarminGo`).
+   *   *(Advanced users can clone the repository using `git clone ...` if preferred).*
 
-## Setup Instructions
+**3. ✨ Install Dependencies:**
+   *   **Open PowerShell or Command Prompt (CMD) in the Project Folder:**
+       1.  Open File Explorer and navigate to the folder where you extracted the downloaded ZIP file (e.g., `jg-garmin-to-sheets-main`).
+       2.  Click in the address bar at the top of File Explorer.
+       3.  Type `powershell` and press Enter. (Alternatively, type `cmd` and press Enter).
+       *   This opens a terminal window directly in your project folder. You should see the folder path in the prompt (e.g., `PS C:\path\to\jg-garmin-to-sheets-main>`).
+   *   *(Alternatively, open PowerShell/CMD from the Start Menu and use the `cd` command to navigate: `cd path\to\your\jg-garmin-to-sheets-main`)*
+   *   In the PowerShell or CMD window you just opened, run the following command to install the necessary libraries:
+     ```shell
+     pip install -r requirements.txt
+     ```
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/yourusername/garmin-sync.git
-cd garmin-sync
-```
+**4. ⚙️ Configure Your Garmin Login:**
+   *   In the project folder, find the file named `.env.example`.
+   *   **Make a copy** of this file and **rename the copy** to just `.env`.
+   *   Open the `.env` file with a text editor (like Notepad or VS Code).
+   *   Find the lines starting with `USER1_` and fill in *only* your Garmin Connect email and password:
+     ```dotenv
+     # User Profile 1
+     USER1_GARMIN_EMAIL=your_garmin_email@example.com # <-- Put your email here
+     USER1_GARMIN_PASSWORD=your_garmin_password     # <-- Put your password here
+     USER1_SHEET_ID= # <-- Leave this blank for CSV output
+     ```
+   *   Save the `.env` file. (You can add more `USER<N>_` profiles later if needed).
 
-### 2. Set Up Google Sheets API
+**5. ▶️ Run the App & Get CSV:**
+   *   Make sure you are still in the project directory in your PowerShell or CMD window.
+   *   Run the application using this command:
+     ```shell
+     python -m src.main
+     ```
+   *   The interactive menu will appear:
+      1.  **Choose Output:** Select `1` for `CSV`.
+      2.  **Select Profile:** Choose the user profile you configured (e.g., `USER1`).
+      3.  **Enter Dates:** Input the start and end dates using the `YYYY-MM-DD` format (e.g., `2024-01-01`).
+   *   The app will fetch your data.
 
-1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select an existing one
-3. Enable the Google Sheets API for your project
-4. Create credentials (OAuth 2.0 Client ID):
-   - Click "Create Credentials" > "OAuth client ID"
-   - Choose "Desktop app" as the application type
-   - Download the client configuration file
-5. Create a new directory called `credentials` in the project root
-6. Move the downloaded file into the `credentials` directory and rename it to `client_secret.json`
+**6. 📁 Get Your Data!**
+   *   Success! Your data is saved as a CSV file named `garmingo_<profile_name>.csv` (e.g., `garmingo_USER1.csv`) inside the `output` folder within the project directory.
+   *   This `output` folder should automatically open in your file explorer, showing you the file.
 
-### 3. Configure Environment Variables
+---
 
-1.  **Copy the Example File:** Create a `.env` file by copying the example:
-    ```bash
-    cp .env.example .env
-    ```
+## ⚙️ Advanced Setup & Google Sheets Output
 
-2.  **Edit `.env`:** Open the `.env` file and populate it with the details for each user profile you want to sync. Follow the `USER<N>_` prefix convention shown in `.env.example`:
+This section is for users who want to output data directly to Google Sheets or use Python virtual environments.
 
-    ```dotenv
-    # User Profile 1
-    USER1_GARMIN_EMAIL=user1@example.com
-    USER1_GARMIN_PASSWORD=password1
-    USER1_SHEET_ID=sheet_id_1
+**Optional: Use a Python Virtual Environment**
 
-    # User Profile 2
-    USER2_GARMIN_EMAIL=user2@example.com
-    USER2_GARMIN_PASSWORD=password2
-    USER2_SHEET_ID=sheet_id_2
-    # Add more users as needed following the USER<N>_ prefix pattern
+For cleaner dependency management, you might want to create a virtual environment *before* installing requirements (Step 3 in Quick Start).
 
-    # Google API Credentials (shared, point to your downloaded files)
-    GOOGLE_CLIENT_SECRET_PATH=credentials/client_secret.json
-    GOOGLE_TOKEN_PATH=credentials/token.pickle
-    ```
+1.  Navigate to the project directory.
+2.  Create: `python -m venv venv`
+3.  Activate:
+    *   Windows: `venv\Scripts\activate`
+    *   macOS/Linux: `source venv/bin/activate`
+4.  Then run `pip install -r requirements.txt` as usual. Remember to activate the environment (`venv`) each time you run the app.
 
-    *   Replace the example emails, passwords, and sheet IDs with your actual Garmin Connect credentials and the Google Sheet ID for *each user*.
-    *   The `GOOGLE_CLIENT_SECRET_PATH` and `GOOGLE_TOKEN_PATH` usually don't need changing if you followed Step 2 (Google Sheets API Setup).
+**🔑 Google API Setup (for Google Sheets Output)**
 
-3.  **Get Google Sheet IDs:** For each user's sheet:
-    *   Create a new Google Sheet or use an existing one.
-    *   The Sheet ID is part of the URL: `https://docs.google.com/spreadsheets/d/[THIS-IS-YOUR-SHEET-ID]/edit`
-    *   Copy this ID into the corresponding `USER<N>_SHEET_ID` field in your `.env` file.
+To send data to Google Sheets, you need to set up Google API credentials.
 
-### 4. Build and Run with Docker
+1.  **Google Cloud Console:**
+    *   Go to the [Google Cloud Console](https://console.cloud.google.com/).
+    *   Create a new project or select an existing one.
+    *   Enable the **Google Sheets API** for your project.
+2.  **Create OAuth Credentials:**
+    *   Go to "APIs & Services" > "Credentials".
+    *   Click "+ CREATE CREDENTIALS" > "OAuth client ID".
+    *   Select "Desktop app" as the application type. Give it a name (e.g., "GarminGo Client").
+    *   Click "Create". You'll see a Client ID and Client Secret (you don't need to copy these now).
+    *   Click **"DOWNLOAD JSON"** on the right side of the newly created credential.
+3.  **Save Credentials File:**
+    *   Create a folder named `credentials` inside your main GarminGo project folder.
+    *   Move the downloaded JSON file into this `credentials` folder.
+    *   **Rename** the downloaded file to `client_secret.json`.
+4.  **Configure `.env` for Google:**
+    *   Open your `.env` file.
+    *   Ensure the `GOOGLE_CLIENT_SECRET_PATH` points to your file:
+     ```dotenv
+     GOOGLE_CLIENT_SECRET_PATH=credentials/client_secret.json
+     ```
+    *   The `GOOGLE_TOKEN_PATH` is where the app will store your authorization token once you grant access. The default is usually fine:
+     ```dotenv
+     GOOGLE_TOKEN_PATH=credentials/token.pickle
+     ```
+    *   For *each user profile* you want to sync to Sheets, you **must** provide a `USER<N>_SHEET_ID`:
+        *   Create a Google Sheet for the data.
+        *   The Sheet ID is in the URL: `https://docs.google.com/spreadsheets/d/[THIS-IS-THE-SHEET-ID]/edit`
+        *   Copy this ID into the corresponding `USER<N>_SHEET_ID` field in your `.env` file:
+          ```dotenv
+          USER1_GARMIN_EMAIL=user1@example.com
+          USER1_GARMIN_PASSWORD=password1
+          USER1_SHEET_ID=the_actual_sheet_id_from_google # <-- Add Sheet ID here
+          ```
+    *   Save the `.env` file.
 
-1. Build the Docker image:
-```bash
-docker build -t garmin-sync .
-```
+**▶️ Running for Google Sheets Output:**
 
-2.  **Run the Sync Tool:**
-    ```bash
-    # Make sure your .env file is in the current directory
-    # Mount the credentials directory and the .env file
-    docker run -v $(pwd)/credentials:/app/credentials -v $(pwd)/.env:/app/.env garmin-sync
-    ```
-    The tool will now run interactively:
-    *   It will list the user profiles found in your `.env` file and prompt you to select one.
-    *   It will then ask for the `Start Date` (YYYY-MM-DD format).
-    *   Finally, it will ask for the `End Date` (YYYY-MM-DD format).
-
-    The data for the selected user and date range will be synced to their specified Google Sheet.
-
-### Running Without Docker
-
-If you prefer to not use Docker, you can run directly with Python.
-
-1. Create a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-3.  **Run the Sync Tool:**
-    ```bash
-    # Make sure your .env file is in the project root directory
+1.  Make sure your `.env` file is configured with the Sheet ID(s) and Google credential paths.
+2.  Activate your virtual environment if you are using one.
+3.  Run the app from the project directory:
+    ```shell
     python -m src.main
     ```
-    The tool will now run interactively:
-    *   It will list the user profiles found in your `.env` file and prompt you to select one.
-    *   It will then ask for the `Start Date` (YYYY-MM-DD format).
-    *   Finally, it will ask for the `End Date` (YYYY-MM-DD format).
+4.  Follow the interactive menu:
+    1.  **Choose Output:** Select `2` for `Google Sheets`.
+    2.  **Select Profile:** Choose the user profile (ensure it has a `SHEET_ID` in `.env`).
+    3.  **Enter Dates:** Input start and end dates (`YYYY-MM-DD`).
+5.  **❗ First Run Only:** Your web browser will open, asking you to log in to your Google account and grant permission for the app to access your Google Sheets. Allow access. A `token.pickle` file will be created in your `credentials` folder.
+6.  The app will then fetch the data and write it to the specified Google Sheet.
 
-    The data for the selected user and date range will be synced to their specified Google Sheet.
+---
 
-## Available Metrics
+## 📊 Available Metrics
 
 The tool syncs the following daily metrics from Garmin Connect:
-- Sleep Score
-- Sleep Length
-- Weight
-- Body Fat Percentage
-- Blood Pressure (Systolic/Diastolic)
-- Active/Resting Calories
-- Resting Heart Rate
-- Average Stress
-- Training Status
-- VO2 Max (Running/Cycling)
-- Intensity Minutes
-- Activity Counts and Distances/Durations (Running, Cycling, Strength, Cardio)
 
-These metrics were chosen specifically because they relate to long-term health and longevity planning.
+*   Sleep Score
+*   Sleep Length
+*   Weight
+*   Body Fat Percentage
+*   Blood Pressure (Systolic/Diastolic)
+*   Active/Resting Calories
+*   Resting Heart Rate
+*   Average Stress
+*   Training Status
+*   VO2 Max (Running/Cycling)
+*   Intensity Minutes
+*   Activity Counts and Distances/Durations (Running, Cycling, Strength, Cardio)
 
-## Troubleshooting
+*These metrics were chosen specifically because they relate to long-term health and longevity planning.*
 
-1. Authentication Issues:
-   - Ensure your Garmin credentials are correct in `.env`
-   - For Google Sheets connection issues, delete `token.pickle` and try again. This will trigger the app to launch your browser and reconnect your Google account.
+---
 
-2. Permission Issues:
-   - Ensure the credentials directory is mounted correctly in Docker
-   - Check that your Google account has edit access to the sheet
+## 🛠️ Troubleshooting
 
-## Security Notes
+*   **Garmin Login Issues:** Double-check `USER<N>_GARMIN_EMAIL` and `USER<N>_GARMIN_PASSWORD` in your `.env` file.
+*   **Google Sheets Access Denied / Errors:**
+    *   Ensure the Google Sheets API is enabled in your Google Cloud project.
+    *   Verify the `USER<N>_SHEET_ID` in `.env` is correct and that the Google account you authorized has edit access to that specific Sheet.
+    *   Try deleting the `credentials/token.pickle` file and running the app again (choose Sheets output). This forces re-authentication via your browser.
+*   **`FileNotFoundError` for `.env` or `client_secret.json`:** Make sure you are running the `python -m src.main` command from the *main project directory* (the one containing `src`, `requirements.txt`, etc.) and that the files exist in the correct locations (`.env` in the root, `client_secret.json` inside the `credentials` folder).
+*   **Module Not Found Errors:** Ensure you have installed dependencies (`pip install -r requirements.txt`) and activated your virtual environment if you created one.
 
-- Never commit your `.env` file or anything in the `credentials` directory
-- Keep your Google client secret and credentials secure
-- The tool uses environment variables for all sensitive data
+---
 
-## License
+## 🔒 Security Notes
+
+*   **Never share or commit your `.env` file** to Git or any public place, as it contains your passwords.
+*   The `.gitignore` file is already set up to prevent accidental commits of `.env` and the `credentials` folder.
+*   Keep your Google `client_secret.json` file secure.
+
+---
+
+## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
