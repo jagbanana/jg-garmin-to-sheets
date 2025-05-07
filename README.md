@@ -46,8 +46,8 @@ This is the easiest way to get started and export your Garmin data.
    *   Make sure you have Python 3.9 or newer installed. You can download it from [python.org](https://www.python.org/downloads/).
 
 **2. 📄 Get the Code:**
-   *   Go to the GarminGo GitHub repository page.
-   *   Click the green "Code" button and select **"Download ZIP"**.
+   *   Go to the GarminGo GitHub repository page (you are probably already there).
+   *   Click the green "Code" button at the top right of the page) and select **"Download ZIP"**.
    *   Extract the downloaded ZIP file to a folder on your computer (e.g., `C:\GarminGo` or `/Users/YourName/GarminGo`).
    *   *(Advanced users can clone the repository using `git clone ...` if preferred).*
 
@@ -58,30 +58,34 @@ This is the easiest way to get started and export your Garmin data.
        3.  Type `powershell` and press Enter. (Alternatively, type `cmd` and press Enter).
        *   This opens a terminal window directly in your project folder. You should see the folder path in the prompt (e.g., `PS C:\path\to\jg-garmin-to-sheets-main>`).
    *   *(Alternatively, open PowerShell/CMD from the Start Menu and use the `cd` command to navigate: `cd path\to\your\jg-garmin-to-sheets-main`)*
-   *   In the PowerShell or CMD window you just opened, run the following command to install the necessary libraries:
-     ```shell
+   *   In the PowerShell or CMD window you just opened, run the following command to install the necessary libraries):
+    ```powershell
      pip install -r requirements.txt
-     ```
+    ```
 
 **4. ⚙️ Configure Your Garmin Login:**
    *   In the project folder, find the file named `.env.example`.
    *   **Make a copy** of this file and **rename the copy** to just `.env`.
    *   Open the `.env` file with a text editor (like Notepad or VS Code).
    *   Find the lines starting with `USER1_` and fill in *only* your Garmin Connect email and password:
+
      ```dotenv
      # User Profile 1
      USER1_GARMIN_EMAIL=your_garmin_email@example.com # <-- Put your email here
      USER1_GARMIN_PASSWORD=your_garmin_password     # <-- Put your password here
      USER1_SHEET_ID= # <-- Leave this blank for CSV output
      ```
+
    *   Save the `.env` file. (You can add more `USER<N>_` profiles later if needed).
 
 **5. ▶️ Run the App & Get CSV:**
    *   Make sure you are still in the project directory in your PowerShell or CMD window.
    *   Run the application using this command:
-     ```shell
+
+    ```powershell
      python -m src.main
      ```
+
    *   The interactive menu will appear:
       1.  **Choose Output:** Select `1` for `CSV`.
       2.  **Select Profile:** Choose the user profile you configured (e.g., `USER1`).
@@ -94,12 +98,13 @@ This is the easiest way to get started and export your Garmin data.
 
 **7. Optional: Prep Your AI!**
 
-    *   As shown in the screenshots above, once you have your data, you can connect it to the AI of your choice.
-    *   Describe in full detail what YOU want help with. 
-    *   Give the LLM a clear role.
-    *   Add as much documentation as you are comfortable with. This can be GarminGo data, a log of your protocol changes, doctor notes, blood work, and more.
+   *   As shown in the screenshots above, once you have your data, you can connect it to the AI of your choice.
+   *   Describe in full detail what YOU want help with. 
+   *   Give the LLM a clear role.
+   *   Add as much documentation as you are comfortable with. This can be GarminGo data, a log of your protocol changes, doctor notes, blood work, and more.
 
 Sample Instructions:
+
     ```prompt 
     Project Goal
     
@@ -176,7 +181,7 @@ To send data to Google Sheets, you need to set up Google API credentials.
 1.  Make sure your `.env` file is configured with the Sheet ID(s) and Google credential paths.
 2.  Activate your virtual environment if you are using one.
 3.  Run the app from the project directory:
-    ```shell
+    ```powershell
     python -m src.main
     ```
 4.  Follow the interactive menu:
