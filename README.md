@@ -1,10 +1,10 @@
 # 🚀 GarminGo - Your Garmin Data, Simplified! 📄📈
 
-Effortlessly pull your daily health metrics from Garmin Connect and save them directly to a user-friendly CSV file or Google Sheets.
+Pull your daily health metrics from Garmin Connect and save them directly to a user-friendly CSV file or Google Sheets.
 
-I created this utility to feed data into an LLM (e.g. Claude, ChatGPT, or Gemini) so that I could gain insights for improving my health and longevity.
+I created this utility to feed my data into AI (e.g. LLMs like Claude, ChatGPT, and Gemini) so that I could gain insights for improving my health and longevity. 
 
-Even if you aren't technical, getting your data as a CSV is super easy!
+Even if you aren't technical, getting your data as a CSV is pretty simple!
 
 **🔒 Security & Privacy First:**
 
@@ -12,15 +12,29 @@ Even if you aren't technical, getting your data as a CSV is super easy!
 *   **Local Credentials:** Your Garmin login details are stored securely on *your* computer in the `.env` file (which you create).
 *   **Google Integration (Optional):** If using Google Sheets, the app securely links your Google account via your browser the first time you run it for Sheets output.
 
+✨ Pro tip!
+
+If feeding your data to an LLM (like Claude, ChatGPT, or Gemini), ensure you are on a paid plan and that you check the privacy settings. Paid Claude accounts are "private by default" making Claude an excellent option. 
+
+Power users can also consider running local LLMs.
+
 ## ✨ Screenshots
 
 **Running the App:**
-![Running the utility in PowerShell](screenshots/screenshot1powershell.png)
+![Running GarminGo in PowerShell](screenshots/GarminGo_CMD.png)
 *A simple interactive menu guides you.*
 
-**Google Sheets Output (Optional):**
+**Google Sheets Output (can also be to local CSV):**
 ![Your data shows in a Google Sheet](screenshots/screenshot2sheets.png)
-*Your Garmin data ready for analysis.*
+*Your Garmin data ready for analysis or AI.*
+
+**Health and Longevity Insights in Claude:**
+![Connecting your GarminGo health data to Claude](screenshots/GarminGo_Claude.png)
+*Your Garmin data ready for analysis or AI in Claude, ChatGPT, or Gemini.*
+
+**Live Googe Sheets Connection to Gemini:**
+![Feed continuous GarminGo data updates to Google Sheets](screenshots/GarminGo_Gemini_Advanced.png)
+*Live connection between Google Sheets and Gemini.*
 
 ---
 
@@ -77,6 +91,29 @@ This is the easiest way to get started and export your Garmin data.
 **6. 📁 Get Your Data!**
    *   Success! Your data is saved as a CSV file named `garmingo_<profile_name>.csv` (e.g., `garmingo_USER1.csv`) inside the `output` folder within the project directory.
    *   This `output` folder should automatically open in your file explorer, showing you the file.
+
+**7. Optional: Prep Your AI!**
+
+    *   As shown in the screenshots above, once you have your data, you can connect it to the AI of your choice.
+    *   Describe in full detail what YOU want help with. 
+    *   Give the LLM a clear role.
+    *   Add as much documentation as you are comfortable with. This can be GarminGo data, a log of your protocol changes, doctor notes, blood work, and more.
+
+Sample Instructions:
+    ```prompt 
+    Project Goal
+    
+    The goal of this project is to optimize my health, happiness, and longevity. In order to do that, I’ll need to measure various aspects of my life and make data-driven adjustments in my routine over time.
+
+    I want you to act as my advisor, assisting in providing research-based recommendations and facts that will aid in my decision-making processes. You will effectively be my "Longevity Advisor" layering in expertise from the nutrition, fitness, and medical fields. I understand I need to make any final decisions myself and with a medical professional, but you can still provide me with information to help guide my decision making and sharpen the questions I ask.
+
+    In the Knowledge, you’ll find these documents:
+    <describe documents>
+
+    I want you to act as my partner and consultant in this journey, helping me brainstorm and objectively look at progress and areas of opportunity.
+
+    Look for changes and ideas that will make the most impact with the least effort and expense. That said, if there are high-value, high-probability changes I can make that will require effort or cost, it’s okay to recommend them too. Just ensure changes are prioritized. The 80/20 rule and Pareto chart concepts will likely apply here.
+     ```
 
 ---
 
