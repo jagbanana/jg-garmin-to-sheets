@@ -69,7 +69,7 @@ This is the easiest way to get started and export your Garmin data.
    *   Open the `.env` file with a text editor (like Notepad or VS Code).
    *   Find the lines starting with `USER1_` and fill in *only* your Garmin Connect email and password:
 
-     ```text
+     ```dotenv
      # User Profile 1
      USER1_GARMIN_EMAIL=your_garmin_email@example.com # <-- Put your email here
      USER1_GARMIN_PASSWORD=your_garmin_password     # <-- Put your password here
@@ -105,7 +105,7 @@ This is the easiest way to get started and export your Garmin data.
 
 Sample Instructions:
 
-    ```text
+    ```
     Project Goal
     
     The goal of this project is to optimize my health, happiness, and longevity. In order to do that, I’ll need to measure various aspects of my life and make data-driven adjustments in my routine over time.
