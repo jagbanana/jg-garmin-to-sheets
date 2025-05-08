@@ -59,7 +59,7 @@ This is the easiest way to get started and export your Garmin data.
        *   This opens a terminal window directly in your project folder. You should see the folder path in the prompt (e.g., `PS C:\path\to\jg-garmin-to-sheets-main>`).
    *   *(Alternatively, open PowerShell/CMD from the Start Menu and use the `cd` command to navigate: `cd path\to\your\jg-garmin-to-sheets-main`)*
    *   In the PowerShell or CMD window you just opened, run the following command to install the necessary libraries):
-    ```powershell
+    ```sh
      pip install -r requirements.txt
     ```
 
@@ -69,7 +69,7 @@ This is the easiest way to get started and export your Garmin data.
    *   Open the `.env` file with a text editor (like Notepad or VS Code).
    *   Find the lines starting with `USER1_` and fill in *only* your Garmin Connect email and password:
 
-     ```dotenv
+     ```text
      # User Profile 1
      USER1_GARMIN_EMAIL=your_garmin_email@example.com # <-- Put your email here
      USER1_GARMIN_PASSWORD=your_garmin_password     # <-- Put your password here
@@ -105,7 +105,7 @@ This is the easiest way to get started and export your Garmin data.
 
 Sample Instructions:
 
-    ```prompt 
+    ```text
     Project Goal
     
     The goal of this project is to optimize my health, happiness, and longevity. In order to do that, I’ll need to measure various aspects of my life and make data-driven adjustments in my routine over time.
