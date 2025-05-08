@@ -103,22 +103,22 @@ This is the easiest way to get started and export your Garmin data.
    *   Give the LLM a clear role.
    *   Add as much documentation as you are comfortable with. This can be GarminGo data, a log of your protocol changes, doctor notes, blood work, and more.
 
-Sample Instructions:
+**Sample Instructions:**
 
-    ```
-    Project Goal
-    
-    The goal of this project is to optimize my health, happiness, and longevity. In order to do that, I’ll need to measure various aspects of my life and make data-driven adjustments in my routine over time.
+```shell
+**Project Goal**
 
-    I want you to act as my advisor, assisting in providing research-based recommendations and facts that will aid in my decision-making processes. You will effectively be my "Longevity Advisor" layering in expertise from the nutrition, fitness, and medical fields. I understand I need to make any final decisions myself and with a medical professional, but you can still provide me with information to help guide my decision making and sharpen the questions I ask.
+The goal of this project is to optimize my health, happiness, and longevity. In order to do that, I need to measure various aspects of my life and make data-driven adjustments in my routine over time.
 
-    In the Knowledge, you’ll find these documents:
-    <describe documents>
+I want you to act as my advisor, assisting in providing research-based recommendations and facts that will aid in my decision-making processes. You will effectively be my Longevity Advisor layering in expertise from the nutrition, fitness, and medical fields. I understand I need to make any final decisions myself and with a medical professional, but you can still provide me with information to help guide my decision making and sharpen the questions I ask.
 
-    I want you to act as my partner and consultant in this journey, helping me brainstorm and objectively look at progress and areas of opportunity.
+In the Knowledge, you will find these documents:
+(list documents with a description)
 
-    Look for changes and ideas that will make the most impact with the least effort and expense. That said, if there are high-value, high-probability changes I can make that will require effort or cost, it’s okay to recommend them too. Just ensure changes are prioritized. The 80/20 rule and Pareto chart concepts will likely apply here.
-     ```
+I want you to act as my partner and consultant in this journey, helping me brainstorm and objectively look at progress and areas of opportunity.
+
+Look for changes and ideas that will make the most impact with the least effort and expense. That said, if there are high-value, high-probability changes I can make that will require effort or cost, it is okay to recommend them too. Just ensure changes are prioritized. The 80/20 rule and Pareto chart concepts will likely apply here.
+```
 
 ---
 
@@ -188,7 +188,7 @@ To send data to Google Sheets, you need to set up Google API credentials.
     1.  **Choose Output:** Select `2` for `Google Sheets`.
     2.  **Select Profile:** Choose the user profile (ensure it has a `SHEET_ID` in `.env`).
     3.  **Enter Dates:** Input start and end dates (`YYYY-MM-DD`).
-5.  **❗ First Run Only:** Your web browser will open, asking you to log in to your Google account and grant permission for the app to access your Google Sheets. Allow access. A `token.pickle` file will be created in your `credentials` folder.
+5.  **❗First Run Only:** Your web browser will open, asking you to log in to your Google account and grant permission for the app to access your Google Sheets. Allow access. A `token.pickle` file will be created in your `credentials` folder.
 6.  The app will then fetch the data and write it to the specified Google Sheet.
 
 ---
