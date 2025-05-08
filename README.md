@@ -68,13 +68,12 @@ This is the easiest way to get started and export your Garmin data.
    *   **Make a copy** of this file and **rename the copy** to just `.env`.
    *   Open the `.env` file with a text editor (like Notepad or VS Code).
    *   Find the lines starting with `USER1_` and fill in *only* your Garmin Connect email and password:
-
-     ```dotenv
-     # User Profile 1
-     USER1_GARMIN_EMAIL=your_garmin_email@example.com # <-- Put your email here
-     USER1_GARMIN_PASSWORD=your_garmin_password     # <-- Put your password here
-     USER1_SHEET_ID= # <-- Leave this blank for CSV output
-     ```
+    	 ```dotenv
+     	# User Profile 1
+     	USER1_GARMIN_EMAIL=your_garmin_email@example.com # <-- Put your email here
+     	USER1_GARMIN_PASSWORD=your_garmin_password     # <-- Put your password here
+     	USER1_SHEET_ID= # <-- Leave this blank for CSV output
+     	```
 
    *   Save the `.env` file. (You can add more `USER<N>_` profiles later if needed).
 
@@ -82,9 +81,9 @@ This is the easiest way to get started and export your Garmin data.
    *   Make sure you are still in the project directory in your PowerShell or CMD window.
    *   Run the application using this command:
 
-    ```powershell
-     python -m src.main
-     ```
+    	```powershell
+     	python -m src.main
+     	```
 
    *   The interactive menu will appear:
       1.  **Choose Output:** Select `1` for `CSV`.
@@ -105,20 +104,18 @@ This is the easiest way to get started and export your Garmin data.
 
 **Sample Instructions:**
 
-```shell
-**Project Goal**
+> **Project Goal**
 
-The goal of this project is to optimize my health, happiness, and longevity. In order to do that, I need to measure various aspects of my life and make data-driven adjustments in my routine over time.
+> The goal of this project is to optimize my health, happiness, and longevity. In order to do that, I need to measure various aspects of my life and make data-driven adjustments in my routine over time.
 
-I want you to act as my advisor, assisting in providing research-based recommendations and facts that will aid in my decision-making processes. You will effectively be my Longevity Advisor layering in expertise from the nutrition, fitness, and medical fields. I understand I need to make any final decisions myself and with a medical professional, but you can still provide me with information to help guide my decision making and sharpen the questions I ask.
+> I want you to act as my advisor, assisting in providing research-based recommendations and facts that will aid in my decision-making processes. You will effectively be my Longevity Advisor layering in expertise from the nutrition, fitness, and medical fields. I understand I need to make any final decisions myself and with a medical professional, but you can still provide me with information to help guide my decision making and sharpen the questions I ask.
 
-In the Knowledge, you will find these documents:
+> In the Knowledge, you will find these documents:
 (list documents with a description)
 
-I want you to act as my partner and consultant in this journey, helping me brainstorm and objectively look at progress and areas of opportunity.
+> I want you to act as my partner and consultant in this journey, helping me brainstorm and objectively look at progress and areas of opportunity.
 
-Look for changes and ideas that will make the most impact with the least effort and expense. That said, if there are high-value, high-probability changes I can make that will require effort or cost, it is okay to recommend them too. Just ensure changes are prioritized. The 80/20 rule and Pareto chart concepts will likely apply here.
-```
+> Look for changes and ideas that will make the most impact with the least effort and expense. That said, if there are high-value, high-probability changes I can make that will require effort or cost, it is okay to recommend them too. Just ensure changes are prioritized. The 80/20 rule and Pareto chart concepts will likely apply here.
 
 ---
 
