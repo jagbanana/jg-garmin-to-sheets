@@ -6,6 +6,8 @@ I created this utility to feed my data into AI (e.g. LLMs like Claude, ChatGPT, 
 
 Even if you aren't technical, getting your data as a CSV is pretty simple!
 
+While it's simple for non-technical users, it also supports power users, allowing you to schedule and run everything via command line arguments.
+
 **🔒 Security & Privacy First:**
 
 *   **Open Source:** GarminGo's code is simple and viewable by anyone.
@@ -17,6 +19,20 @@ Even if you aren't technical, getting your data as a CSV is pretty simple!
 If feeding your data to an LLM (like Claude, ChatGPT, or Gemini), ensure you are on a paid plan and that you check the privacy settings. Paid Claude accounts are "private by default" making Claude an excellent option. 
 
 Power users can also consider running local LLMs.
+
+## Table of Contents
+
+* [✨ Screenshots](#screenshots)
+* [🚀 Quick Start: Get Your Data as a CSV File](#quick-start-get-your-data-as-a-csv-file)
+* [⚙️ Advanced Options & Google Sheets Integration](#advanced-options--google-sheets-integration)
+    * [Optional: Use a Python Virtual Environment](#optional-use-a-python-virtual-environment)
+    * [Optional: Running as a Scheduled Task](#optional-running-as-a-scheduled-task)
+    * [🔑 Google API Setup (for Google Sheets Output)](#google-api-setup-for-google-sheets-output)
+    * [▶️ Running for Google Sheets Output:](#running-for-google-sheets-output)
+* [📊 Available Metrics](#available-metrics)
+* [🛠️ Troubleshooting](#troubleshooting)
+* [🔒 Security Notes](#security-notes)
+* [📜 License](#license)
 
 ## ✨ Screenshots
 
@@ -59,21 +75,21 @@ This is the easiest way to get started and export your Garmin data.
        *   This opens a terminal window directly in your project folder. You should see the folder path in the prompt (e.g., `PS C:\path\to\jg-garmin-to-sheets-main>`).
    *   *(Alternatively, open PowerShell/CMD from the Start Menu and use the `cd` command to navigate: `cd path\to\your\jg-garmin-to-sheets-main`)*
    *   In the PowerShell or CMD window you just opened, run the following command to install the necessary libraries):
-    ```sh
-     pip install -r requirements.txt
-    ```
+     ```sh
+      pip install -r requirements.txt
+     ```
 
 **4. ⚙️ Configure Your Garmin Login:**
    *   In the project folder, find the file named `.env.example`.
    *   **Make a copy** of this file and **rename the copy** to just `.env`.
    *   Open the `.env` file with a text editor (like Notepad or VS Code).
    *   Find the lines starting with `USER1_` and fill in *only* your Garmin Connect email and password:
-    	 ```dotenv
-     	# User Profile 1
-     	USER1_GARMIN_EMAIL=your_garmin_email@example.com # <-- Put your email here
-     	USER1_GARMIN_PASSWORD=your_garmin_password     # <-- Put your password here
-     	USER1_SHEET_ID= # <-- Leave this blank for CSV output
-     	```
+     	 ```dotenv
+      	# User Profile 1
+      	USER1_GARMIN_EMAIL=your_garmin_email@example.com # <-- Put your email here
+      	USER1_GARMIN_PASSWORD=your_garmin_password     # <-- Put your password here
+      	USER1_SHEET_ID= # <-- Leave this blank for CSV output
+      	```
 
    *   Save the `.env` file. (You can add more `USER<N>_` profiles later if needed).
 
@@ -81,14 +97,14 @@ This is the easiest way to get started and export your Garmin data.
    *   Make sure you are still in the project directory in your PowerShell or CMD window.
    *   Run the application using this command:
 
-    	```powershell
-     	python -m src.main
-     	```
+     	```powershell
+      	python -m src.main
+      	```
 
    *   The interactive menu will appear:
-      1.  **Choose Output:** Select `1` for `CSV`.
-      2.  **Select Profile:** Choose the user profile you configured (e.g., `USER1`).
-      3.  **Enter Dates:** Input the start and end dates using the `YYYY-MM-DD` format (e.g., `2024-01-01`).
+       1.  **Choose Output:** Select `1` for `CSV`.
+       2.  **Select Profile:** Choose the user profile you configured (e.g., `USER1`).
+       3.  **Enter Dates:** Input the start and end dates using the `YYYY-MM-DD` format (e.g., `2024-01-01`).
    *   The app will fetch your data.
 
 **6. 📁 Get Your Data!**
@@ -143,7 +159,7 @@ python -m src.main cli-sync --start-date YYYY-MM-DD --end-date YYYY-MM-DD --prof
 ```
 Replace `YYYY-MM-DD` with the desired dates, `YOUR_PROFILE_NAME` with your configured profile name (e.g., `USER1` if you followed the basic setup), and `<csv_or_sheets>` with either `csv` or `sheets` depending on your desired output.
 
-**🔑 Google API Setup (for Google Sheets Output)**
+### 🔑 Google API Setup (for Google Sheets Output)
 
 To send data to Google Sheets, you need to set up Google API credentials.
 
@@ -182,7 +198,7 @@ To send data to Google Sheets, you need to set up Google API credentials.
           ```
     *   Save the `.env` file.
 
-**▶️ Running for Google Sheets Output:**
+### ▶️ Running for Google Sheets Output:
 
 1.  Make sure your `.env` file is configured with the Sheet ID(s) and Google credential paths.
 2.  Activate your virtual environment if you are using one.
