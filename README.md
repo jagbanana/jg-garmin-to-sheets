@@ -118,7 +118,7 @@ This is the easiest way to get started and export your Garmin data.
 > Look for changes and ideas that will make the most impact with the least effort and expense. That said, if there are high-value, high-probability changes I can make that will require effort or cost, it is okay to recommend them too. Just ensure changes are prioritized. The 80/20 rule and Pareto chart concepts will likely apply here.
 
 
-## ⚙️ Advanced Setup & Google Sheets Output
+## ⚙️ Advanced Options & Google Sheets Integration
 
 This section is for users who want to output data directly to Google Sheets or use Python virtual environments.
 
@@ -132,6 +132,16 @@ For cleaner dependency management, you might want to create a virtual environmen
     *   Windows: `venv\Scripts\activate`
     *   macOS/Linux: `source venv/bin/activate`
 4.  Then run `pip install -r requirements.txt` as usual. Remember to activate the environment (`venv`) each time you run the app.
+
+### Optional: Running as a Scheduled Task
+
+For users who wish to run GarminGo non-interactively, for example, as a scheduled task, command-line arguments can be used. This allows you to specify the start date, end date, user profile, and output type directly.
+
+Use the following command structure:
+```bash
+python -m src.main cli-sync --start-date YYYY-MM-DD --end-date YYYY-MM-DD --profile YOUR_PROFILE_NAME --output-type <csv_or_sheets>
+```
+Replace `YYYY-MM-DD` with the desired dates, `YOUR_PROFILE_NAME` with your configured profile name (e.g., `USER1` if you followed the basic setup), and `<csv_or_sheets>` with either `csv` or `sheets` depending on your desired output.
 
 **🔑 Google API Setup (for Google Sheets Output)**
 
