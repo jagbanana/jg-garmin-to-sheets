@@ -234,6 +234,8 @@ The tool syncs the following daily metrics from Garmin Connect:
 
 *These metrics were chosen specifically because they relate to long-term health and longevity planning.*
 
+Want a metric added? Just raise an Issue and request it!
+
 ---
 
 ## 🛠️ Troubleshooting
