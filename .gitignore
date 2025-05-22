@@ -2,7 +2,7 @@
 .env
 credentials/
 *.pickle
-/memory-bank/
+output/
 Prod_Requirements.md
 
 # Python
