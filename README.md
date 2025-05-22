@@ -221,6 +221,8 @@ The tool syncs the following daily metrics from Garmin Connect:
 
 *   Sleep Score
 *   Sleep Length
+*   HRV (Overnight)
+*   HRV Status
 *   Weight
 *   Body Fat Percentage
 *   Blood Pressure (Systolic/Diastolic)

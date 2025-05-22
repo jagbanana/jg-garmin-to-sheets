@@ -18,13 +18,13 @@ from garth.exc import GarthHTTPError # Import the specific Garmin error
 
 # --- Constants ---
 CSV_HEADERS = [
-    "Date", "Sleep Score", "Sleep Length", "Weight (kg)", "Body Fat %",
+    "Date", "Sleep Score", "Sleep Length", "HRV (ms)", "HRV Status", "Weight (kg)", "Body Fat %",
     "Blood Pressure Systolic", "Blood Pressure Diastolic", "Active Calories",
     "Resting Calories", "Resting Heart Rate", "Average Stress", "Training Status",
     "VO2 Max Running", "VO2 Max Cycling", "Intensity Minutes", "All Activity Count",
     "Running Activity Count", "Running Distance (km)", "Cycling Activity Count",
     "Cycling Distance (km)", "Strength Activity Count", "Strength Duration",
-    "Cardio Activity Count", "Cardio Duration"
+    "Cardio Activity Count", "Cardio Duration" # HRV (ms) moved to after Sleep Length
 ]
 
 # Mapping from CSV Header to potential GarminMetrics attribute name (adjust if needed)
@@ -53,7 +53,9 @@ HEADER_TO_ATTRIBUTE_MAP = {
     "Strength Activity Count": "strength_activity_count",
     "Strength Duration": "strength_duration",
     "Cardio Activity Count": "cardio_activity_count",
-    "Cardio Duration": "cardio_duration"
+    "Cardio Duration": "cardio_duration",
+    "HRV (ms)": "overnight_hrv", # Added HRV mapping
+    "HRV Status": "hrv_status"
 }
 
 
@@ -221,6 +223,8 @@ async def sync(email: str, password: str, start_date: date, end_date: date, outp
         while current_date <= end_date: # Use passed end_date
             logger.info(f"Fetching metrics for {current_date}")
             daily_metrics = await garmin_client.get_metrics(current_date)
+            if daily_metrics: # Ensure daily_metrics is not None before accessing attributes
+                pass
             metrics.append(daily_metrics)
             current_date += timedelta(days=1)
 
@@ -359,8 +363,9 @@ async def sync(email: str, password: str, start_date: date, end_date: date, outp
 
                             # --- Value Formatting ---
                             formatted_value = "" # Default formatted value
-                            if header in ["Date", "Training Status"]:
+                            if header in ["Date", "Training Status", "HRV Status"]:
                                 # Ensure non-None values are strings for these specific fields
+                                # HRV Status is a string (e.g., "BALANCED") and should not be converted to float.
                                 formatted_value = str(value) if value is not None else ""
                             else:
                                 # Attempt numeric conversion and rounding for other fields

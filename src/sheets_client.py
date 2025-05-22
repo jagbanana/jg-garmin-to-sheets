@@ -59,12 +59,12 @@ class GoogleSheetsClient:
     def _setup_sheet(self):
         """Sets up the sheet with headers if it doesn't exist."""
         headers = [
-            'Date', 'Sleep Score', 'Sleep Length', 'Weight', 'Body Fat %', 
-            'Blood Pressure Systolic', 'Blood Pressure Diastolic', 
+            'Date', 'Sleep Score', 'Sleep Length', 'HRV (ms)', 'HRV Status', 'Weight', 'Body Fat %',
+            'Blood Pressure Systolic', 'Blood Pressure Diastolic',
             'Active Calories', 'Resting Calories', 'Resting Heart Rate',
-            'Average Stress', 'Training Status', 
+            'Average Stress', 'Training Status',
             'VO2 Max Running', 'VO2 Max Cycling',
-            'Intensity Minutes', 'All Activity Count', 
+            'Intensity Minutes', 'All Activity Count',
             'Running Activity Count', 'Running Distance',
             'Cycling Activity Count', 'Cycling Distance',
             'Strength Activity Count', 'Strength Duration',
@@ -96,6 +96,8 @@ class GoogleSheetsClient:
                 metric.date.strftime('%Y-%m-%d'),
                 metric.sleep_score,
                 metric.sleep_length,
+                metric.overnight_hrv,
+                metric.hrv_status, # Added HRV Status data
                 metric.weight,
                 metric.body_fat,
                 metric.blood_pressure_systolic,

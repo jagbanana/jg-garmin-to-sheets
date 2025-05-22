@@ -33,6 +33,8 @@ class GarminMetrics:
     strength_duration: Optional[float] = None
     cardio_activity_count: Optional[int] = None
     cardio_duration: Optional[float] = None
+    overnight_hrv: Optional[int] = None
+    hrv_status: Optional[str] = None
 
 class GarminClient:
     def __init__(self, email: str, password: str):
@@ -49,6 +51,19 @@ class GarminClient:
             self._authenticated = True
         except garminconnect.GarminConnectAuthenticationError as e:
             raise Exception(f"Authentication failed: {str(e)}")
+
+    async def _fetch_hrv_data(self, target_date_iso: str) -> Optional[Dict[str, Any]]:
+        """Fetches HRV data for the given date."""
+        # logger.info(f"Attempting to fetch HRV data for {target_date_iso}")
+        try:
+            hrv_data = await asyncio.get_event_loop().run_in_executor(
+                None, self.client.get_hrv_data, target_date_iso
+            )
+            logger.debug(f"Raw HRV data for {target_date_iso}: {hrv_data}")
+            return hrv_data
+        except Exception as e:
+            logger.error(f"Error fetching HRV data for {target_date_iso}: {str(e)}")
+            return None
 
     async def get_metrics(self, target_date: date) -> GarminMetrics:
         if not self._authenticated:
@@ -80,10 +95,13 @@ class GarminClient:
                 return await asyncio.get_event_loop().run_in_executor(
                     None, self.client.get_training_status, target_date.isoformat()
                 )
+            
+            async def get_hrv():
+                return await self._fetch_hrv_data(target_date.isoformat())
 
             # Fetch data concurrently
-            stats, sleep_data, activities, summary, training_status = await asyncio.gather(
-                get_stats(), get_sleep(), get_activities(), get_user_summary(), get_training_status()
+            stats, sleep_data, activities, summary, training_status, hrv_payload = await asyncio.gather(
+                get_stats(), get_sleep(), get_activities(), get_user_summary(), get_training_status(), get_hrv()
             )
 
             # Debug logging
@@ -92,6 +110,22 @@ class GarminClient:
             logger.debug(f"Raw activities data: {activities}")
             logger.debug(f"Raw summary data: {summary}")
             logger.debug(f"Raw training status data: {training_status}")
+            logger.debug(f"Raw HRV payload: {hrv_payload}")
+
+            # Process HRV data
+            overnight_hrv_value: Optional[int] = None
+            hrv_status_value: Optional[str] = None
+            if hrv_payload and isinstance(hrv_payload, dict) and 'hrvSummary' in hrv_payload:
+                hrv_summary = hrv_payload['hrvSummary']
+                if isinstance(hrv_summary, dict):
+                    overnight_hrv_value = hrv_summary.get('lastNightAvg')
+                    hrv_status_value = hrv_summary.get('status')
+                    # logger.info(f"Extracted HRV: {overnight_hrv_value}, Status: {hrv_status_value} for {target_date}")
+                else:
+                    logger.warning(f"HRV summary is not a dictionary for {target_date}: {hrv_summary}")
+            else:
+                logger.warning(f"HRV data or hrvSummary not found in payload for {target_date}")
+
 
             # Process activities
             running_count = 0
@@ -174,10 +208,16 @@ class GarminClient:
                 strength_activity_count=strength_count,
                 strength_duration=strength_duration,
                 cardio_activity_count=cardio_count,
-                cardio_duration=cardio_duration
+                cardio_duration=cardio_duration,
+                overnight_hrv=overnight_hrv_value,
+                hrv_status=hrv_status_value
             )
 
         except Exception as e:
             logger.error(f"Error fetching metrics for {target_date}: {str(e)}")
-            # Return metrics object with just the date if there's an error
-            return GarminMetrics(date=target_date)
+            # Return metrics object with just the date and potentially HRV if fetched before error
+            return GarminMetrics(
+                date=target_date,
+                overnight_hrv=locals().get('overnight_hrv_value'), # Use locals() to get value if available
+                hrv_status=locals().get('hrv_status_value')
+            )
