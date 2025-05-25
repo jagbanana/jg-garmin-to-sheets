@@ -78,7 +78,7 @@ This is the easiest way to get started and export your Garmin data.
        *   This opens a terminal window directly in your project folder. You should see the folder path in the prompt (e.g., `PS C:\path\to\jg-garmin-to-sheets-main>`).
    *   *(Alternatively, open PowerShell/CMD from the Start Menu and use the `cd` command to navigate: `cd path\to\your\jg-garmin-to-sheets-main`)*
    *   In the PowerShell or CMD window you just opened, run the following command. This will install GarminGo and all its required libraries (defined in `pyproject.toml`), making the `garmingo` command available in your terminal:
-     ```sh
+     ```powershell
      pip install .
      ```
    *   *(For developers or if you want an "editable" install, which allows your code changes to be reflected immediately without reinstalling, you can use `pip install -e .`)*
@@ -155,10 +155,8 @@ For cleaner dependency management, you might want to create and activate a virtu
     ```
 3.  Activate the virtual environment:
     *   Windows (PowerShell): `.\venv\Scripts\Activate.ps1`
-    *   Windows (CMD): `venv\Scripts\activate.bat`
-    *   macOS/Linux (bash/zsh): `source venv/bin/activate`
 4.  Then, install the project within the activated environment:
-    ```sh
+    ```powershell
     pip install .
     ```
     *(Or `pip install -e .` for an editable install).*
@@ -169,13 +167,13 @@ For cleaner dependency management, you might want to create and activate a virtu
 For users who wish to run GarminGo non-interactively (e.g., as a scheduled task), command-line arguments can be used. This allows you to specify the start date, end date, user profile, and output type directly.
 
 After installing the project (see Step 3 in Quick Start), you can use the `garmingo` command:
-```bash
+```powershell
 garmingo cli-sync --start-date YYYY-MM-DD --end-date YYYY-MM-DD --profile YOUR_PROFILE_NAME --output-type <csv_or_sheets>
 ```
 Replace `YYYY-MM-DD` with the desired dates, `YOUR_PROFILE_NAME` with your configured profile name (e.g., `USER1`), and `<csv_or_sheets>` with either `csv` or `sheets`.
 
 **Alternative:** If you haven't installed the project via `pip install .` or prefer to run it directly with Python:
-```bash
+```powershell
 python -m src.main cli-sync --start-date YYYY-MM-DD --end-date YYYY-MM-DD --profile YOUR_PROFILE_NAME --output-type <csv_or_sheets>
 ```
 Ensure you are in the project's root directory when using `python -m src.main`.
