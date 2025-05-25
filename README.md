@@ -66,7 +66,7 @@ This is the easiest way to get started and export your Garmin data.
 
 **2. 📄 Get the Code:**
    *   Go to the GarminGo GitHub repository page (you are probably already there).
-   *   Click the green "Code" button at the top right of the page) and select **"Download ZIP"**.
+   *   Click the green "Code" button (at the top right of the page) and select **"Download ZIP"**.
    *   Extract the downloaded ZIP file to a folder on your computer (e.g., `C:\GarminGo` or `/Users/YourName/GarminGo`).
    *   *(Advanced users can clone the repository using `git clone ...` if preferred).*
 
