@@ -62,6 +62,7 @@ This is the easiest way to get started and export your Garmin data.
 
 **1. 🐍 Install Python:**
    *   Make sure you have Python 3.9 or newer installed. You can download it from [python.org](https://www.python.org/downloads/).
+   *   During install, ensure you check "Add Python to PATH."
 
 **2. 📄 Get the Code:**
    *   Go to the GarminGo GitHub repository page (you are probably already there).
