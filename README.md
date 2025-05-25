@@ -1,4 +1,4 @@
-# 🚀 GarminGo: Make data-driven decisions about your health, fitness, and longevity! 📄📈
+🚀 GarminGo: Make data-driven decisions about your health, fitness, and longevity! 📄📈
 
 Pull your daily health metrics from Garmin Connect and save them directly to a user-friendly CSV file or Google Sheets.
 
@@ -78,9 +78,9 @@ This is the easiest way to get started and export your Garmin data.
        *   This opens a terminal window directly in your project folder. You should see the folder path in the prompt (e.g., `PS C:\path\to\jg-garmin-to-sheets-main>`).
    *   *(Alternatively, open PowerShell/CMD from the Start Menu and use the `cd` command to navigate: `cd path\to\your\jg-garmin-to-sheets-main`)*
    *   In the PowerShell or CMD window you just opened, run the following command. This will install GarminGo and all its required libraries (defined in `pyproject.toml`), making the `garmingo` command available in your terminal:
-     ```powershell
-     pip install .
-     ```
+```powershell
+pip install .
+```
    *   *(For developers or if you want an "editable" install, which allows your code changes to be reflected immediately without reinstalling, you can use `pip install -e .`)*
 
 **4. ⚙️ Configure Your Garmin Login:**
@@ -100,13 +100,13 @@ This is the easiest way to get started and export your Garmin data.
 **5. ▶️ Run the App & Get CSV:**
    *   Ensure you are in the project's root directory in your terminal (PowerShell, CMD, bash, etc.). If the Python scripts directory was added to your system's PATH during Python installation, you might be able to run `garmingo` from any directory.
    *   Run the application using the `garmingo` command:
-     ```powershell
-     garmingo
-     ```
+```powershell
+garmingo
+```
    *   **Alternative:** You can also run the script directly using Python (this is useful if you chose not to install the package via `pip install .` or for troubleshooting):
-     ```powershell
-     python -m src.main
-     ```
+```powershell
+python -m src.main
+```
    *   The interactive menu will appear:
        1.  **Choose Output:** Select `1` for `CSV`.
        2.  **Select Profile:** Choose the user profile you configured (e.g., `USER1`).
