@@ -18,3 +18,4 @@ logs/
 .venv/
 venv/
 ENV/
+build/

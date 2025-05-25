@@ -33,6 +33,8 @@ class GarminMetrics:
     strength_duration: Optional[float] = None
     cardio_activity_count: Optional[int] = None
     cardio_duration: Optional[float] = None
+    tennis_activity_count: Optional[int] = None
+    tennis_activity_duration: Optional[float] = None
     overnight_hrv: Optional[int] = None
     hrv_status: Optional[str] = None
 
@@ -136,6 +138,8 @@ class GarminClient:
             strength_duration = 0
             cardio_count = 0
             cardio_duration = 0
+            tennis_count = 0
+            tennis_duration = 0
 
             for activity in activities:
                 activity_type = activity.get('activityType', {})
@@ -154,6 +158,9 @@ class GarminClient:
                 elif 'cardio' in type_key:
                     cardio_count += 1
                     cardio_duration += activity.get('duration', 0) / 60
+                elif 'tennis' in type_key: # Added for Tennis
+                    tennis_count += 1
+                    tennis_duration += activity.get('duration', 0) / 60 # Convert seconds to minutes
 
             # Process sleep data
             sleep_dto = sleep_data.get('dailySleepDTO', {})
@@ -209,6 +216,8 @@ class GarminClient:
                 strength_duration=strength_duration,
                 cardio_activity_count=cardio_count,
                 cardio_duration=cardio_duration,
+                tennis_activity_count=tennis_count, # Added for Tennis
+                tennis_activity_duration=tennis_duration, # Added for Tennis
                 overnight_hrv=overnight_hrv_value,
                 hrv_status=hrv_status_value
             )

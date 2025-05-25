@@ -68,7 +68,8 @@ class GoogleSheetsClient:
             'Running Activity Count', 'Running Distance',
             'Cycling Activity Count', 'Cycling Distance',
             'Strength Activity Count', 'Strength Duration',
-            'Cardio Activity Count', 'Cardio Duration'
+            'Cardio Activity Count', 'Cardio Duration',
+            'Tennis Activity Count', 'Tennis Activity Duration' # Added Tennis
         ]
         
         # Check if sheet is empty
@@ -118,7 +119,9 @@ class GoogleSheetsClient:
                 metric.strength_activity_count,
                 metric.strength_duration,
                 metric.cardio_activity_count,
-                metric.cardio_duration
+                metric.cardio_duration,
+                metric.tennis_activity_count, # Added Tennis
+                metric.tennis_activity_duration # Added Tennis
             ]
             rows.append(row)
         

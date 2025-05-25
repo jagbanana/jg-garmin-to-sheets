@@ -1,3 +1,20 @@
+Metadata-Version: 2.4
+Name: garmingo
+Version: 0.1.0
+Summary: A tool to sync Garmin data to Google Sheets or CSV.
+Author-email: Your Name <you@example.com>
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE.md
+Requires-Dist: google-api-python-client
+Requires-Dist: google-auth-httplib2
+Requires-Dist: google-auth-oauthlib
+Requires-Dist: garth
+Dynamic: license-file
+
 # 🚀 GarminGo: Make data-driven decisions about your health, fitness, and longevity! 📄📈
 
 Pull your daily health metrics from Garmin Connect and save them directly to a user-friendly CSV file or Google Sheets.

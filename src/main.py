@@ -7,7 +7,7 @@ import os
 import csv # Added for CSV output
 import subprocess # Added for opening directory
 from pathlib import Path # Added import
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv # Make sure find_dotenv is imported
 import logging
 
 from src.garmin_client import GarminClient
@@ -24,7 +24,8 @@ CSV_HEADERS = [
     "VO2 Max Running", "VO2 Max Cycling", "Intensity Minutes", "All Activity Count",
     "Running Activity Count", "Running Distance (km)", "Cycling Activity Count",
     "Cycling Distance (km)", "Strength Activity Count", "Strength Duration",
-    "Cardio Activity Count", "Cardio Duration" # HRV (ms) moved to after Sleep Length
+    "Cardio Activity Count", "Cardio Duration", # HRV (ms) moved to after Sleep Length
+    "Tennis Activity Count", "Tennis Activity Duration"
 ]
 
 # Mapping from CSV Header to potential GarminMetrics attribute name (adjust if needed)
@@ -32,7 +33,7 @@ CSV_HEADERS = [
 HEADER_TO_ATTRIBUTE_MAP = {
     "Date": "date",
     "Sleep Score": "sleep_score",
-    "Sleep Length": "sleep_length", # Or sleep_duration? Assuming sleep_length
+    "Sleep Length": "sleep_length",
     "Weight (kg)": "weight_kg",
     "Body Fat %": "body_fat_percentage",
     "Blood Pressure Systolic": "bp_systolic",
@@ -54,8 +55,10 @@ HEADER_TO_ATTRIBUTE_MAP = {
     "Strength Duration": "strength_duration",
     "Cardio Activity Count": "cardio_activity_count",
     "Cardio Duration": "cardio_duration",
-    "HRV (ms)": "overnight_hrv", # Added HRV mapping
-    "HRV Status": "hrv_status"
+    "HRV (ms)": "overnight_hrv",
+    "HRV Status": "hrv_status",
+    "Tennis Activity Count": "tennis_activity_count",
+    "Tennis Activity Duration": "tennis_activity_duration"
 }
 
 
@@ -91,7 +94,12 @@ async def run_interactive_sync():
 
     # --- Load Profiles ---
     # Load environment variables (needed for profiles)
-    load_dotenv()
+    env_file_path_found = find_dotenv(usecwd=True)
+    if env_file_path_found:
+        load_dotenv(dotenv_path=env_file_path_found)
+    else:
+        logger.error("No .env file found. Please ensure it's in the project root.")
+
     user_profiles = load_user_profiles()
     if not user_profiles:
         logger.error("No user profiles found in .env file. Please define at least one profile (e.g., USER1_GARMIN_EMAIL=...).")
@@ -512,7 +520,12 @@ def sync_wrapper(
         sys.exit(1)
 
     # Load .env and profiles
-    load_dotenv()
+    env_file_path_found = find_dotenv(usecwd=True)
+    if env_file_path_found:
+        load_dotenv(dotenv_path=env_file_path_found)
+    else:
+        logger.error("No .env file found. Please ensure it's in the project root.")
+
     user_profiles = load_user_profiles()
     if profile_name not in user_profiles:
         logger.error(f"Profile '{profile_name}' not found in .env file or is incomplete.")
@@ -559,7 +572,7 @@ def sync_wrapper(
 
 
 # --- Main Execution ---
-if __name__ == "__main__":
+def main():
     # Default behavior: run the interactive mode
     # ASCII Art for GarminGo (Removed)
     # ascii_art = r"""...""" # Removed multi-line ASCII art
@@ -611,3 +624,6 @@ if __name__ == "__main__":
     # python -m src.main cli-sync --output-type csv --profile USER1 --start-date 2023-01-01 --end-date 2023-01-02 --csv-path output.csv
     # Or use typer's entry point mechanism if properly configured in pyproject.toml etc.
     # app() # Keep this line commented out or remove if CLI is never intended via direct `python -m src.main` call
+
+if __name__ == "__main__":
+    main()
