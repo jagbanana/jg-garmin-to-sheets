@@ -1,4 +1,4 @@
-🚀 GarminGo: Make data-driven decisions about your health, fitness, and longevity! 📄📈
+# 🚀 GarminGo: Make data-driven decisions about your health, fitness, and longevity! 📄📈
 
 Pull your daily health metrics from Garmin Connect and save them directly to a user-friendly CSV file or Google Sheets.
 
