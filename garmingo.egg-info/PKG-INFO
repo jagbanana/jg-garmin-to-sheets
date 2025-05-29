@@ -29,10 +29,14 @@ Classifier: Operating System :: OS Independent
 Requires-Python: >=3.8
 Description-Content-Type: text/markdown
 License-File: LICENSE.md
-Requires-Dist: google-api-python-client
-Requires-Dist: google-auth-httplib2
-Requires-Dist: google-auth-oauthlib
-Requires-Dist: garth==0.5.2
+Requires-Dist: garminconnect==0.2.26
+Requires-Dist: garth==0.5.3
+Requires-Dist: google-api-python-client>=2.0.0
+Requires-Dist: google-auth-httplib2>=0.1.0
+Requires-Dist: google-auth-oauthlib>=0.4.6
+Requires-Dist: pandas>=1.3.0
+Requires-Dist: python-dotenv>=0.19.0
+Requires-Dist: typer>=0.4.0
 Dynamic: license-file
 
 # 🚀 GarminGo: Make data-driven decisions about your health, fitness, and longevity! 📄📈
@@ -99,10 +103,11 @@ This is the easiest way to get started and export your Garmin data.
 
 **1. 🐍 Install Python:**
    *   Make sure you have Python 3.9 or newer installed. You can download it from [python.org](https://www.python.org/downloads/).
+   *   During install, ensure you check "Add Python to PATH."
 
 **2. 📄 Get the Code:**
    *   Go to the GarminGo GitHub repository page (you are probably already there).
-   *   Click the green "Code" button at the top right of the page) and select **"Download ZIP"**.
+   *   Click the green "Code" button (at the top right of the page) and select **"Download ZIP"**.
    *   Extract the downloaded ZIP file to a folder on your computer (e.g., `C:\GarminGo` or `/Users/YourName/GarminGo`).
    *   *(Advanced users can clone the repository using `git clone ...` if preferred).*
 
@@ -114,9 +119,9 @@ This is the easiest way to get started and export your Garmin data.
        *   This opens a terminal window directly in your project folder. You should see the folder path in the prompt (e.g., `PS C:\path\to\jg-garmin-to-sheets-main>`).
    *   *(Alternatively, open PowerShell/CMD from the Start Menu and use the `cd` command to navigate: `cd path\to\your\jg-garmin-to-sheets-main`)*
    *   In the PowerShell or CMD window you just opened, run the following command. This will install GarminGo and all its required libraries (defined in `pyproject.toml`), making the `garmingo` command available in your terminal:
-     ```sh
-     pip install .
-     ```
+        ```powershell
+        pip install .
+        ```
    *   *(For developers or if you want an "editable" install, which allows your code changes to be reflected immediately without reinstalling, you can use `pip install -e .`)*
 
 **4. ⚙️ Configure Your Garmin Login:**
@@ -136,13 +141,13 @@ This is the easiest way to get started and export your Garmin data.
 **5. ▶️ Run the App & Get CSV:**
    *   Ensure you are in the project's root directory in your terminal (PowerShell, CMD, bash, etc.). If the Python scripts directory was added to your system's PATH during Python installation, you might be able to run `garmingo` from any directory.
    *   Run the application using the `garmingo` command:
-     ```powershell
-     garmingo
-     ```
+        ```powershell
+        garmingo
+        ```
    *   **Alternative:** You can also run the script directly using Python (this is useful if you chose not to install the package via `pip install .` or for troubleshooting):
-     ```powershell
-     python -m src.main
-     ```
+        ```powershell
+        python -m src.main
+        ```
    *   The interactive menu will appear:
        1.  **Choose Output:** Select `1` for `CSV`.
        2.  **Select Profile:** Choose the user profile you configured (e.g., `USER1`).
@@ -191,10 +196,8 @@ For cleaner dependency management, you might want to create and activate a virtu
     ```
 3.  Activate the virtual environment:
     *   Windows (PowerShell): `.\venv\Scripts\Activate.ps1`
-    *   Windows (CMD): `venv\Scripts\activate.bat`
-    *   macOS/Linux (bash/zsh): `source venv/bin/activate`
 4.  Then, install the project within the activated environment:
-    ```sh
+    ```powershell
     pip install .
     ```
     *(Or `pip install -e .` for an editable install).*
@@ -205,13 +208,13 @@ For cleaner dependency management, you might want to create and activate a virtu
 For users who wish to run GarminGo non-interactively (e.g., as a scheduled task), command-line arguments can be used. This allows you to specify the start date, end date, user profile, and output type directly.
 
 After installing the project (see Step 3 in Quick Start), you can use the `garmingo` command:
-```bash
+```powershell
 garmingo cli-sync --start-date YYYY-MM-DD --end-date YYYY-MM-DD --profile YOUR_PROFILE_NAME --output-type <csv_or_sheets>
 ```
 Replace `YYYY-MM-DD` with the desired dates, `YOUR_PROFILE_NAME` with your configured profile name (e.g., `USER1`), and `<csv_or_sheets>` with either `csv` or `sheets`.
 
 **Alternative:** If you haven't installed the project via `pip install .` or prefer to run it directly with Python:
-```bash
+```powershell
 python -m src.main cli-sync --start-date YYYY-MM-DD --end-date YYYY-MM-DD --profile YOUR_PROFILE_NAME --output-type <csv_or_sheets>
 ```
 Ensure you are in the project's root directory when using `python -m src.main`.
