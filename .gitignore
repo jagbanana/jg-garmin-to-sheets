@@ -3,7 +3,8 @@
 credentials/
 *.pickle
 output/
-Prod_Requirements.md
+projectStatus.md
+.roo/
 
 # Python
 __pycache__/

@@ -4,6 +4,9 @@ from typing import Dict, Any, Optional
 import asyncio
 import logging
 import garminconnect
+from garth.sso import resume_login
+import garth
+from .exceptions import MFARequiredException
 
 logger = logging.getLogger(__name__)
 
@@ -42,17 +45,54 @@ class GarminClient:
     def __init__(self, email: str, password: str):
         self.client = garminconnect.Garmin(email, password)
         self._authenticated = False
+        self.mfa_ticket_dict = None
 
     async def authenticate(self):
         """Modified to handle non-async login method"""
+        # Store the garth client instance before attempting login, in case MFA is required
+        # and garminconnect overwrites self.client.garth with a dict.
+        initial_garth_client = self.client.garth
+
         try:
             def login_wrapper():
                 return self.client.login()
             
-            await asyncio.get_event_loop().run_in_executor(None, login_wrapper)
+            login_result = await asyncio.get_event_loop().run_in_executor(None, login_wrapper)
+            
+            # If login_wrapper completes without raising an exception, it's a successful non-MFA login.
             self._authenticated = True
+            self.mfa_ticket_dict = None # Clear ticket on successful non-MFA login
+
+        except AttributeError as e:
+            if "'dict' object has no attribute 'expired'" in str(e):
+                logger.info("Caught AttributeError indicating MFA challenge.")
+                if hasattr(self.client.garth, 'oauth2_token') and isinstance(self.client.garth.oauth2_token, dict):
+                    self.mfa_ticket_dict = self.client.garth.oauth2_token # Capture the MFA state dictionary
+                    logger.info(f"MFA ticket (dict) captured: {self.mfa_ticket_dict}")
+                    raise MFARequiredException(message="MFA code is required.", mfa_data=self.mfa_ticket_dict)
+                else:
+                    logger.error("MFA detected via AttributeError, but self.client.garth.oauth2_token is not a dict. This is unexpected.")
+                    raise # Re-raise the original AttributeError
+            else:
+                # Re-raise if it's an AttributeError but not the specific MFA one
+                raise
         except garminconnect.GarminConnectAuthenticationError as e:
-            raise Exception(f"Authentication failed: {str(e)}")
+            # Catch specific GarminConnectAuthenticationError for clearer logging
+            if "MFA-required" in str(e) or "Authentication failed" in str(e): # Added "Authentication failed" as it can also indicate MFA
+                logger.info("Caught GarminConnectAuthenticationError indicating MFA challenge.")
+                if hasattr(self.client.garth, 'oauth2_token') and isinstance(self.client.garth.oauth2_token, dict):
+                    self.mfa_ticket_dict = self.client.garth.oauth2_token # Capture the MFA state dictionary
+                    logger.info(f"MFA ticket (dict) captured: {self.mfa_ticket_dict}")
+                    raise MFARequiredException(message="MFA code is required.", mfa_data=self.mfa_ticket_dict)
+                else:
+                    logger.error("MFA detected via GarminConnectAuthenticationError, but self.client.garth.oauth2_token is not a dict. This is unexpected.")
+                    raise # Re-raise the original GarminConnectAuthenticationError
+            else:
+                # Re-raise if it's an AuthenticationError but not the specific MFA one
+                raise
+        except Exception as e:
+            logger.error(f"An unexpected error occurred during authentication: {str(e)}")
+            raise garminconnect.GarminConnectAuthenticationError(f"An unexpected error occurred during authentication: {str(e)}") from e # Re-raise as GarminConnectAuthenticationError
 
     async def _fetch_hrv_data(self, target_date_iso: str) -> Optional[Dict[str, Any]]:
         """Fetches HRV data for the given date."""
@@ -68,6 +108,7 @@ class GarminClient:
             return None
 
     async def get_metrics(self, target_date: date) -> GarminMetrics:
+        logger.debug(f"VERIFY get_metrics: display_name: {getattr(self.client, 'display_name', 'Not Set')}, oauth2_token type: {type(self.client.garth.oauth2_token)}")
         if not self._authenticated:
             await self.authenticate()
 
@@ -294,3 +335,80 @@ class GarminClient:
                 overnight_hrv=locals().get('overnight_hrv_value'), # Use locals() to get value if available
                 hrv_status=locals().get('hrv_status_value')
             )
+
+    async def submit_mfa_code(self, mfa_code: str):
+        """Submits the MFA code to complete authentication."""
+        if not hasattr(self, 'mfa_ticket_dict') or not self.mfa_ticket_dict:
+            logger.error("MFA ticket (dict state) not available. Cannot submit MFA code.")
+            raise Exception("MFA ticket (dict state) not available. Please authenticate first.")
+
+        try:
+            loop = asyncio.get_event_loop()
+            # The resume_login function from garth.sso expects the garth.Client instance
+            # that is awaiting MFA, and the MFA code.
+            resume_login_result = await loop.run_in_executor(
+                None,
+                lambda: resume_login(self.mfa_ticket_dict, mfa_code) # Use the captured dict
+            )
+            
+            logger.info(f"DEBUG: resume_login returned type: {type(resume_login_result)}")
+            logger.info(f"DEBUG: resume_login returned value: {resume_login_result}")
+
+            if isinstance(resume_login_result, tuple) and len(resume_login_result) == 2:
+                oauth1_token, oauth2_token = resume_login_result
+                logger.info(f"DEBUG: Unpacked OAuth1Token: {type(oauth1_token)}, {oauth1_token}")
+                logger.info(f"DEBUG: Unpacked OAuth2Token: {type(oauth2_token)}, {oauth2_token}")
+            else:
+                logger.error(f"CRITICAL: resume_login did not return the expected tuple of tokens. Returned: {resume_login_result}")
+                raise Exception("MFA token processing failed: Unexpected result from resume_login.")
+
+            if 'client' in self.mfa_ticket_dict and isinstance(self.mfa_ticket_dict.get('client'), garth.Client):
+                garth_client_instance = self.mfa_ticket_dict['client']
+                logger.info(f"DEBUG: Retrieved garth_client_instance from mfa_ticket_dict: {type(garth_client_instance)}")
+                
+                # Explicitly set the new tokens on the garth.Client instance
+                garth_client_instance.oauth1_token = oauth1_token
+                garth_client_instance.oauth2_token = oauth2_token
+                logger.info("DEBUG: Successfully set oauth1_token and oauth2_token on garth_client_instance.")
+                logger.info(f"DEBUG: garth_client_instance.oauth2_token after update: {type(garth_client_instance.oauth2_token)}, {garth_client_instance.oauth2_token}")
+
+                # Now, assign this updated garth_client_instance to self.client.garth
+                self.client.garth = garth_client_instance
+                logger.info("Successfully updated self.client.garth with the token-updated garth_client_instance from mfa_ticket_dict.")
+
+                # New logic to populate profile details on self.client:
+                try:
+                    logger.info("Attempting to fetch profile details via self.client.garth.profile...")
+                    # Accessing self.client.garth.profile should trigger garth to fetch it if not already cached,
+                    # using the now-authenticated garth client.
+                    profile_data = self.client.garth.profile
+                    
+                    if profile_data:
+                        self.client.display_name = profile_data.get("displayName")
+                        self.client.full_name = profile_data.get("fullName")
+                        self.client.unit_system = profile_data.get("measurementSystem")
+                        logger.info(f"Successfully populated profile details. Display name: {self.client.display_name}, Full name: {self.client.full_name}, Unit system: {self.client.unit_system}")
+                    else:
+                        logger.error("Failed to retrieve profile_data from self.client.garth.profile (it was None or empty).")
+                        raise Exception("Failed to retrieve profile data after MFA.")
+
+                except Exception as e_profile_fetch:
+                    logger.error(f"Error fetching/setting profile details after MFA: {e_profile_fetch}", exc_info=True)
+                    # This is critical for subsequent API calls, so re-raise.
+                    raise Exception(f"Failed to fetch or set profile details after MFA: {e_profile_fetch}")
+            else:
+                logger.error(f"CRITICAL: Failed to find a valid garth.Client in self.mfa_ticket_dict['client'] after resume_login. mfa_ticket_dict['client'] is: {self.mfa_ticket_dict.get('client')}")
+                raise Exception("Critical error: Could not retrieve garth.Client instance from mfa_ticket_dict post MFA for token update.")
+            
+            self._authenticated = True
+            self.mfa_ticket_dict = None # Clear the used MFA ticket dict
+            logger.info("MFA verification successful. Garth client updated with authenticated instance.")
+            return True
+        except (garminconnect.GarminConnectAuthenticationError, garth.exc.GarthException) as e: # Corrected to GarthException
+            self._authenticated = False
+            logger.error(f"MFA code submission failed: {str(e)}")
+            raise Exception(f"MFA code submission failed: {str(e)}")
+        except Exception as e:
+            self._authenticated = False
+            logger.error(f"An unexpected error occurred during MFA submission: {str(e)}")
+            raise Exception(f"An unexpected error occurred during MFA submission: {str(e)}")

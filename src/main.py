@@ -14,6 +14,7 @@ from src.garmin_client import GarminClient
 from src.sheets_client import GoogleSheetsClient, GoogleAuthTokenRefreshError # Added import
 import re # Added for regex matching
 from garth.exc import GarthHTTPError # Import the specific Garmin error
+from src.exceptions import MFARequiredException
 
 
 # --- Constants ---
@@ -208,21 +209,29 @@ async def sync(email: str, password: str, start_date: date, end_date: date, outp
         # Authenticate with Garmin using passed credentials
         logger.info("Authenticating with Garmin...")
         try:
+            print("Attempting to authenticate with Garmin Connect...")
             await garmin_client.authenticate()
+            print("Successfully authenticated with Garmin Connect.")
+        except MFARequiredException as mfa_exc:
+            print("Garmin is requesting an MFA code. Please enter it below:")
+            mfa_code = input("MFA Code: ")
+            try:
+                print("Submitting MFA code...")
+                await garmin_client.submit_mfa_code(mfa_code)
+                print("Successfully authenticated with Garmin Connect using MFA.")
+            except GarthHTTPError as mfa_auth_err:
+                logger.error(f"MFA authentication failed: {mfa_auth_err}", exc_info=True)
+                print(f"Invalid MFA code. Please try again or ensure your Garmin account settings are correct. Exiting.")
+                sys.exit(1)
+            except Exception as e:
+                logger.error(f"An unexpected error occurred during MFA submission: {e}", exc_info=True)
+                print(f"An unexpected error occurred during MFA submission: {e}. Exiting.")
+                sys.exit(1)
         except GarthHTTPError as auth_err:
-            # Check if the error is likely an authentication failure (e.g., 401)
-            # Note: Garth might not expose status code directly, checking string is a common fallback
-            if "401" in str(auth_err) or "Unauthorized" in str(auth_err):
-                 logger.error(f"Garmin authentication failed for {email}: {auth_err}")
-                 print(f"\nGarmin authentication failed for {email}.")
-                 print("Please check the username and password for the selected profile in your configuration (e.g., .env file).")
-                 # Exit gracefully for this specific error
-                 # Depending on context, you might 'return' instead of 'sys.exit' if called elsewhere
-                 sys.exit(1)
-            else:
-                # Re-raise other GarthHTTPErrors to be caught by the general handler
-                logger.error(f"An unexpected Garmin HTTP error occurred: {auth_err}", exc_info=True)
-                raise # Re-raise the original error
+            logger.error(f"Initial Garmin authentication failed for {email}: {auth_err}", exc_info=True)
+            print(f"\nInitial Garmin authentication failed for {email}.")
+            print("Please check the username and password for the selected profile in your configuration (e.g., .env file). Exiting.")
+            sys.exit(1)
 
         # Get metrics for each day in the date range
         logger.info("Fetching metrics from Garmin...")
