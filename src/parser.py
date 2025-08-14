@@ -3,6 +3,9 @@ from datetime import date
 from typing import Dict, Any, Tuple
 from .config import GarminMetrics
 
+# Suppress the noisy, non-error traceback from the http2 library
+logging.getLogger("hpack").setLevel(logging.WARNING)
+
 logger = logging.getLogger(__name__)
 
 def parse_garmin_data(
@@ -41,7 +44,7 @@ def parse_garmin_data(
         active_cals, resting_cals, steps, intensity_mins, rhr, avg_stress = _parse_summary(summary, target_date)
 
         return GarminMetrics(
-            date=target_date,
+            date=target_date.isoformat(), # Convert date to string here
             sleep_score=sleep_score,
             sleep_length=sleep_length,
             weight=weight,
@@ -74,7 +77,7 @@ def parse_garmin_data(
         )
     except Exception as e:
         logger.error(f"Error parsing metrics for {target_date}: {e}", exc_info=True)
-        return GarminMetrics(date=target_date) # Return empty metrics object on parsing error
+        return GarminMetrics(date=target_date.isoformat()) # Also convert here for safety
 
 def _parse_activities(activities: list) -> Tuple:
     """Helper to parse the activities list."""
@@ -114,23 +117,25 @@ def _parse_activities(activities: list) -> Tuple:
             tennis_count, tennis_duration, activity_calories_sum)
 
 def _parse_sleep(sleep_data: Dict[str, Any], target_date: date) -> Tuple:
-    """Helper to parse sleep data."""
+    """Helper to parse sleep data safely."""
     if not sleep_data:
         logger.warning(f"Sleep data for {target_date} is None.")
         return None, None
     
-    sleep_dto = sleep_data.get('dailySleepDTO', {})
+    sleep_dto = sleep_data.get('dailySleepDTO')
     if not sleep_dto:
         logger.warning(f"Daily sleep DTO not found for {target_date}.")
         return None, None
         
-    score = sleep_dto.get('sleepScores', {}).get('overall', {}).get('value')
+    sleep_scores = sleep_dto.get('sleepScores')
+    score = sleep_scores.get('overall', {}).get('value') if sleep_scores else None
+    
     seconds = sleep_dto.get('sleepTimeSeconds')
     length = seconds / 3600.0 if seconds else None
     return score, length
 
 def _parse_hrv(hrv_payload: Dict[str, Any], target_date: date) -> Tuple:
-    """Helper to parse HRV data."""
+    """Helper to parse HRV data safely."""
     if not hrv_payload:
         logger.warning(f"HRV payload for {target_date} is None.")
         return None, None
@@ -143,18 +148,25 @@ def _parse_hrv(hrv_payload: Dict[str, Any], target_date: date) -> Tuple:
     return hrv_summary.get('lastNightAvg'), hrv_summary.get('status')
 
 def _parse_training_status(training_status: Dict[str, Any], target_date: date) -> Tuple:
-    """Helper to parse training status and VO2 Max."""
+    """Helper to parse training status and VO2 Max safely."""
     if not training_status:
         logger.warning(f"Training status data for {target_date} is None.")
         return None, None, None
 
     vo2_max_running, vo2_max_cycling = None, None
-    most_recent_vo2max = training_status.get('mostRecentVO2Max', {})
+    most_recent_vo2max = training_status.get('mostRecentVO2Max')
     if most_recent_vo2max:
-        vo2_max_running = most_recent_vo2max.get('generic', {}).get('vo2MaxValue')
-        vo2_max_cycling = most_recent_vo2max.get('cycling', {}).get('vo2MaxValue')
+        generic_vo2max = most_recent_vo2max.get('generic')
+        if generic_vo2max:
+            vo2_max_running = generic_vo2max.get('vo2MaxValue')
 
-    status_phrase = training_status.get('mostRecentTrainingStatus', {}).get('trainingStatusFeedbackPhrase')
+        cycling_vo2max = most_recent_vo2max.get('cycling')
+        if cycling_vo2max:
+            vo2_max_cycling = cycling_vo2max.get('vo2MaxValue')
+
+    most_recent_status = training_status.get('mostRecentTrainingStatus')
+    status_phrase = most_recent_status.get('trainingStatusFeedbackPhrase') if most_recent_status else None
+    
     return status_phrase, vo2_max_running, vo2_max_cycling
 
 def _parse_stats(stats: Dict[str, Any], target_date: date) -> Tuple:
