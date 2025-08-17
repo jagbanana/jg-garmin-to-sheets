@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from datetime import date
 from typing import Dict, Any, Optional
 import asyncio
@@ -7,45 +6,16 @@ import garminconnect
 from garth.sso import resume_login
 import garth
 from .exceptions import MFARequiredException
+from .config import GarminMetrics
 
 logger = logging.getLogger(__name__)
-
-@dataclass
-class GarminMetrics:
-    date: date
-    sleep_score: Optional[float] = None
-    sleep_length: Optional[float] = None
-    weight: Optional[float] = None
-    body_fat: Optional[float] = None
-    blood_pressure_systolic: Optional[int] = None
-    blood_pressure_diastolic: Optional[int] = None
-    active_calories: Optional[int] = None
-    resting_calories: Optional[int] = None
-    resting_heart_rate: Optional[int] = None
-    average_stress: Optional[int] = None
-    training_status: Optional[str] = None
-    vo2max_running: Optional[float] = None
-    vo2max_cycling: Optional[float] = None
-    intensity_minutes: Optional[int] = None
-    all_activity_count: Optional[int] = None
-    running_activity_count: Optional[int] = None
-    running_distance: Optional[float] = None
-    cycling_activity_count: Optional[int] = None
-    cycling_distance: Optional[float] = None
-    strength_activity_count: Optional[int] = None
-    strength_duration: Optional[float] = None
-    cardio_activity_count: Optional[int] = None
-    cardio_duration: Optional[float] = None
-    tennis_activity_count: Optional[int] = None
-    tennis_activity_duration: Optional[float] = None
-    overnight_hrv: Optional[int] = None
-    hrv_status: Optional[str] = None
 
 class GarminClient:
     def __init__(self, email: str, password: str):
         self.client = garminconnect.Garmin(email, password)
         self._authenticated = False
         self.mfa_ticket_dict = None
+        self._auth_failed = False  # Track if authentication failed to prevent loops
 
     async def authenticate(self):
         """Modified to handle non-async login method"""
@@ -110,6 +80,8 @@ class GarminClient:
     async def get_metrics(self, target_date: date) -> GarminMetrics:
         logger.debug(f"VERIFY get_metrics: display_name: {getattr(self.client, 'display_name', 'Not Set')}, oauth2_token type: {type(self.client.garth.oauth2_token)}")
         if not self._authenticated:
+            if self._auth_failed:
+                raise Exception("Authentication has already failed. Cannot fetch metrics without successful authentication.")
             await self.authenticate()
 
         try:
@@ -225,6 +197,7 @@ class GarminClient:
             vo2max_running: Optional[float] = None
             vo2max_cycling: Optional[float] = None
             training_status_phrase: Optional[str] = None
+            steps: Optional[int] = None
 
             # Process sleep data
             if sleep_data:
@@ -259,6 +232,7 @@ class GarminClient:
                 intensity_minutes = (summary.get('moderateIntensityMinutes', 0) or 0) + (2 * (summary.get('vigorousIntensityMinutes', 0) or 0))
                 resting_heart_rate = summary.get('restingHeartRate')
                 average_stress = summary.get('averageStressLevel')
+                steps = summary.get('totalSteps')
             else:
                 logger.warning(f"User summary data for {target_date} is None. Summary metrics will be blank.")
 
@@ -324,7 +298,8 @@ class GarminClient:
                 tennis_activity_count=tennis_count, # Added for Tennis
                 tennis_activity_duration=tennis_duration, # Added for Tennis
                 overnight_hrv=overnight_hrv_value,
-                hrv_status=hrv_status_value
+                hrv_status=hrv_status_value,
+                steps=steps
             )
 
         except Exception as e:
@@ -406,9 +381,25 @@ class GarminClient:
             return True
         except (garminconnect.GarminConnectAuthenticationError, garth.exc.GarthException) as e: # Corrected to GarthException
             self._authenticated = False
-            logger.error(f"MFA code submission failed: {str(e)}")
-            raise Exception(f"MFA code submission failed: {str(e)}")
+            self._auth_failed = True  # Mark auth as failed to prevent loops
+            error_msg = str(e)
+            logger.error(f"MFA code submission failed: {error_msg}")
+            
+            # Check for rate limiting
+            if "429" in error_msg or "Too Many Requests" in error_msg:
+                raise Exception("Garmin is rate limiting your requests. Please wait 5-10 minutes before trying again. This happens when there are too many authentication attempts in a short period.")
+            elif "Invalid" in error_msg or "invalid" in error_msg:
+                raise Exception("Invalid MFA code. Please check the code and try again.")
+            else:
+                raise Exception(f"MFA code submission failed: {error_msg}")
         except Exception as e:
             self._authenticated = False
-            logger.error(f"An unexpected error occurred during MFA submission: {str(e)}")
-            raise Exception(f"An unexpected error occurred during MFA submission: {str(e)}")
+            self._auth_failed = True  # Mark auth as failed to prevent loops
+            error_msg = str(e)
+            logger.error(f"An unexpected error occurred during MFA submission: {error_msg}")
+            
+            # Check for rate limiting in generic exceptions too
+            if "429" in error_msg or "Too Many Requests" in error_msg:
+                raise Exception("Garmin is rate limiting your requests. Please wait 5-10 minutes before trying again. This happens when there are too many authentication attempts in a short period.")
+            else:
+                raise Exception(f"An unexpected error occurred during MFA submission: {error_msg}")

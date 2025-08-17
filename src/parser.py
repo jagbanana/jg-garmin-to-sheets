@@ -25,7 +25,7 @@ def parse_garmin_data(
         (
             running_count, running_distance, cycling_count, cycling_distance,
             strength_count, strength_duration, cardio_count, cardio_duration,
-            tennis_count, tennis_duration, activity_calories_sum
+            tennis_count, tennis_duration
         ) = _parse_activities(activities)
 
         # --- Process Sleep ---
@@ -72,8 +72,7 @@ def parse_garmin_data(
             tennis_activity_duration=tennis_duration,
             overnight_hrv=overnight_hrv,
             hrv_status=hrv_status,
-            steps=steps,
-            activity_calories=activity_calories_sum
+            steps=steps
         )
     except Exception as e:
         logger.error(f"Error parsing metrics for {target_date}: {e}", exc_info=True)
@@ -82,17 +81,15 @@ def parse_garmin_data(
 def _parse_activities(activities: list) -> Tuple:
     """Helper to parse the activities list."""
     if not activities:
-        return 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0
+        return 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0, 0.0
 
     running_count, running_distance = 0, 0.0
     cycling_count, cycling_distance = 0, 0.0
     strength_count, strength_duration = 0, 0.0
     cardio_count, cardio_duration = 0, 0.0
     tennis_count, tennis_duration = 0, 0.0
-    activity_calories_sum = 0
 
     for activity in activities:
-        activity_calories_sum += activity.get('calories', 0)
         activity_type = activity.get('activityType', {})
         type_key = activity_type.get('typeKey', '').lower()
 
@@ -114,7 +111,7 @@ def _parse_activities(activities: list) -> Tuple:
     
     return (running_count, running_distance, cycling_count, cycling_distance,
             strength_count, strength_duration, cardio_count, cardio_duration,
-            tennis_count, tennis_duration, activity_calories_sum)
+            tennis_count, tennis_duration)
 
 def _parse_sleep(sleep_data: Dict[str, Any], target_date: date) -> Tuple:
     """Helper to parse sleep data safely."""

@@ -255,6 +255,7 @@ The tool syncs the following daily metrics from Garmin Connect:
 *   Training Status
 *   VO2 Max (Running/Cycling)
 *   Intensity Minutes
+*   Steps (Daily Step Count)
 *   Activity Counts and Distances/Durations (Running, Cycling, Strength, Cardio)
 *   Tennis Activity Count
 *   Tennis Activity Duration
