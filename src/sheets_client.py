@@ -2,7 +2,7 @@ import logging
 from typing import List
 from pathlib import Path
 import pickle
-from datetime import date # Import the date type
+from datetime import datetime, date # Import the date type
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -14,6 +14,24 @@ from .config import GarminMetrics, HEADERS, HEADER_TO_ATTRIBUTE_MAP
 
 logger = logging.getLogger(__name__)
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+
+# Normalize dates in the spreadsheet in case they are not in the right format
+def normalize_date(value: str) -> str:
+    """Try to normalize different date formats to ISO yyyy-mm-dd string."""
+    if not value:
+        return ""
+    try:
+        return datetime.fromisoformat(value).date().isoformat()
+    except Exception:
+        pass
+
+    for fmt in ("%b %d, %Y", "%B %d, %Y"):  # e.g. "Sep 28, 2025" or "September 28, 2025"
+        try:
+            return datetime.strptime(value.strip(), fmt).date().isoformat()
+        except ValueError:
+            continue
+
+    return value.strip()  # fallback: return raw if nothing matched
 
 class GoogleAuthTokenRefreshError(Exception):
     """Raised when the Google API token refresh fails."""
@@ -90,9 +108,17 @@ class GoogleSheetsClient:
         
         try:
             date_column_range = f"'{self.sheet_name}'!A:A"
-            result = self.service.spreadsheets().values().get(spreadsheetId=self.spreadsheet_id, range=date_column_range).execute()
+            result = self.service.spreadsheets().values().get(
+                spreadsheetId=self.spreadsheet_id, range=date_column_range
+            ).execute()
             existing_dates_list = result.get('values', [])
-            date_to_row_map = {row[0]: i + 1 for i, row in enumerate(existing_dates_list) if row}
+            date_to_row_map = {}
+            for i, row in enumerate(existing_dates_list):
+                if not row or not row[0]:
+                    continue
+                key = normalize_date(row[0])
+                date_to_row_map[key] = i + 1
+
         except HttpError as e:
             logger.error(f"Could not read existing dates from sheet: {e}")
             return
