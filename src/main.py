@@ -11,7 +11,7 @@ import logging
 import re
 
 from src.garmin_client import GarminClient
-from src.sheets_client import GoogleSheetsClient, GoogleAuthTokenRefreshError
+from src.sheets_client import GoogleSheetsClient, GoogleAuthTokenRefreshError, normalize_date
 from src.exceptions import MFARequiredException
 from src.config import HEADERS, HEADER_TO_ATTRIBUTE_MAP, GarminMetrics
 
@@ -153,12 +153,59 @@ def load_user_profiles():
             profiles[profile_name][key_map[var_type]] = value
     return profiles
 
+def get_last_logged_date_from_sheets(profile_data: dict) -> Optional[date]:
+    try:
+        sheets_client = GoogleSheetsClient(
+            credentials_path='credentials/client_secret.json',
+            spreadsheet_id=profile_data.get('sheet_id'),
+            sheet_name=profile_data.get('sheet_name', 'Raw Data')
+        )
+        result = sheets_client.service.spreadsheets().values().get(
+            spreadsheetId=profile_data.get('sheet_id'),
+            range=f"'{profile_data.get('sheet_name', 'Raw Data')}'!A:A"
+        ).execute()
+        values = result.get('values', [])
+        if not values or len(values) <= 1:
+            return None
+
+        # skip header row
+        values = values[1:]
+        latest = None
+        for row in values:
+            if not row or not row[0]:
+                continue
+            norm = normalize_date(row[0])   # 🔹 normalize whatever’s in the sheet
+            try:
+                d = datetime.fromisoformat(norm).date()
+                if not latest or d > latest:
+                    latest = d
+            except Exception:
+                continue
+        return latest
+    except Exception as e:
+        logger.warning(f"Could not fetch last logged date: {e}")
+        return None
+
+def compute_resume_range(profile_data: dict, end_offset: int = 1) -> tuple[date, date]:
+    today = datetime.today().date()
+    end = today - timedelta(days=end_offset)
+    last = get_last_logged_date_from_sheets(profile_data)
+    if last:
+        start = last + timedelta(days=1)
+    else:
+        start = end - timedelta(days=30)  # fallback
+    if end < start:
+        end = start
+    return start, end
+
 @app.command()
 def cli_sync(
-    start_date: datetime = typer.Option(..., help="Start date in YYYY-MM-DD format."),
-    end_date: datetime = typer.Option(..., help="End date in YYYY-MM-DD format."),
+    start_date: Optional[datetime] = typer.Option(None, help="Start date in YYYY-MM-DD format."),
+    end_date: Optional[datetime] = typer.Option(None, help="End date in YYYY-MM-DD format."),
     profile: str = typer.Option("USER1", help="The user profile from .env to use (e.g., USER1)."),
-    output_type: str = typer.Option("sheets", help="Output type: 'sheets' or 'csv'.")
+    output_type: str = typer.Option("sheets", help="Output type: 'sheets' or 'csv'."),
+    resume: bool = typer.Option(True, help="When using Google Sheets, resume from last logged date."),
+    end_offset: int = typer.Option(1, help="How many days before today to use as end date (default 1 = yesterday).")
 ):
     """Run the Garmin sync from the command line."""
     user_profiles = load_user_profiles()
@@ -170,16 +217,28 @@ def cli_sync(
 
     email = selected_profile_data.get('email')
     password = selected_profile_data.get('password')
-
     if not email or not password:
         logger.error(f"Email or password not configured for profile '{profile}'.")
         sys.exit(1)
 
+    if start_date and end_date:
+        sd = start_date.date()
+        ed = end_date.date()
+    elif output_type == "sheets" and resume:
+        sd, ed = compute_resume_range(selected_profile_data, end_offset)
+    else:
+        logger.error("Must provide --start-date/--end-date for CSV, or use --resume with Sheets.")
+        sys.exit(1)
+
+    if ed < sd:
+        logger.info("Up to date — nothing to fetch.")
+        sys.exit(0)
+
     asyncio.run(sync(
         email=email,
         password=password,
-        start_date=start_date.date(),
-        end_date=end_date.date(),
+        start_date=sd,
+        end_date=ed,
         output_type=output_type,
         profile_data=selected_profile_data,
         profile_name=profile
@@ -236,30 +295,61 @@ async def run_interactive_sync():
     logger.info(f"Using profile: {selected_profile_name}")
 
     # Date Input
-    date_format = "%Y-%m-%d"
-    start_date = None
-    end_date = None
+    if output_type == "sheets":
+        use_resume = ""
+        while use_resume not in ["y", "n"]:
+            use_resume = input("Resume from last logged date? (y/n): ").strip().lower()
 
-    while True:
-        try:
-            start_date_str = input("Enter start date (YYYY-MM-DD): ")
-            start_date = datetime.strptime(start_date_str, date_format).date()
-            break
-        except ValueError:
-            print(f"Invalid date format. Please use {date_format}.")
+        if use_resume == "y":
+            try:
+                end_offset = int(input("Days before today to use as end date (default 1 = yesterday): ").strip())
+            except ValueError:
+                end_offset = 1
+            start_date, end_date = compute_resume_range(selected_profile_data, end_offset)
+        else:
+            date_format = "%Y-%m-%d"
+            while True:
+                try:
+                    start_date_str = input("Enter start date (YYYY-MM-DD): ")
+                    start_date = datetime.strptime(start_date_str, date_format).date()
+                    break
+                except ValueError:
+                    print(f"Invalid date format. Please use {date_format}.")
+            while True:
+                try:
+                    end_date_str = input("Enter end date (YYYY-MM-DD): ")
+                    end_date = datetime.strptime(end_date_str, date_format).date()
+                    if end_date >= start_date:
+                        break
+                    else:
+                        print("End date cannot be before start date.")
+                except ValueError:
+                    print(f"Invalid date format. Please use {date_format}.")
 
-    while True:
-        try:
-            end_date_str = input("Enter end date (YYYY-MM-DD): ")
-            end_date = datetime.strptime(end_date_str, date_format).date()
-            if end_date >= start_date:
+        logger.info(f"Date range selected: {start_date} to {end_date}")
+
+    else:
+        # CSV requires explicit dates
+        date_format = "%Y-%m-%d"
+        while True:
+            try:
+                start_date_str = input("Enter start date (YYYY-MM-DD): ")
+                start_date = datetime.strptime(start_date_str, date_format).date()
                 break
-            else:
-                print("End date cannot be before start date.")
-        except ValueError:
-            print(f"Invalid date format. Please use {date_format}.")
+            except ValueError:
+                print(f"Invalid date format. Please use {date_format}.")
+        while True:
+            try:
+                end_date_str = input("Enter end date (YYYY-MM-DD): ")
+                end_date = datetime.strptime(end_date_str, date_format).date()
+                if end_date >= start_date:
+                    break
+                else:
+                    print("End date cannot be before start date.")
+            except ValueError:
+                print(f"Invalid date format. Please use {date_format}.")
+        logger.info(f"Date range selected: {start_date.strftime(date_format)} to {end_date.strftime(date_format)}")
 
-    logger.info(f"Date range selected: {start_date.strftime(date_format)} to {end_date.strftime(date_format)}")
 
     # Call Core Sync Logic
     await sync(
