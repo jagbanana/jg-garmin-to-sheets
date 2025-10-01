@@ -188,14 +188,18 @@ def get_last_logged_date_from_sheets(profile_data: dict) -> Optional[date]:
 
 def compute_resume_range(profile_data: dict, end_offset: int = 1) -> tuple[date, date]:
     today = datetime.today().date()
-    end = today - timedelta(days=end_offset)
+    end = today - timedelta(days=end_offset)  # default yesterday if offset=1
     last = get_last_logged_date_from_sheets(profile_data)
+
     if last:
         start = last + timedelta(days=1)
     else:
-        start = end - timedelta(days=30)  # fallback
-    if end < start:
-        end = start
+        start = end - timedelta(days=30)  # fallback: last 30 days
+
+    # Never let start or end go past "yesterday"
+    if start > end:
+        start = end
+
     return start, end
 
 @app.command()
