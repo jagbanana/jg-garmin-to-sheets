@@ -29,6 +29,7 @@ Power users can also consider running local LLMs.
 * [⚙️ Advanced Options & Google Sheets Integration](#advanced-options--google-sheets-integration)
     * [Optional: Use a Python Virtual Environment](#optional-use-a-python-virtual-environment)
     * [Optional: Running as a Scheduled Task](#optional-running-as-a-scheduled-task)
+    * [Optional: Automating Daily Sync on macOS](#optional-automating-daily-sync-on-macos)
     * [🔑 Google API Setup (for Google Sheets Output)](#google-api-setup-for-google-sheets-output)
     * [▶️ Running for Google Sheets Output:](#running-for-google-sheets-output)
 * [📊 Available Metrics](#available-metrics)
@@ -178,6 +179,49 @@ python -m src.main cli-sync --start-date YYYY-MM-DD --end-date YYYY-MM-DD --prof
 ```
 Ensure you are in the project's root directory when using `python -m src.main`.
 
+### Optional: Automating Daily Sync on macOS
+
+If you want your Garmin data to sync automatically each day, you can use macOS’s built-in launchd scheduler. The LaunchAgent calls the helper script run_garmingo.sh. This script runs the sync for both configured users, resuming from the last logged date up to yesterday by default.
+Example run_garmingo.sh (included in the repo):
+```#!/bin/bash
+cd /Users/$USER/jg-garmin-to-sheets-main
+/Users/$USER/jg-garmin-to-sheets-main/venv/bin/python3 -m src.main cli-sync --profile USER1 --output-type sheets --resume --end-offset 1
+/Users/$USER/jg-garmin-to-sheets-main/venv/bin/python3 -m src.main cli-sync --profile USER2 --output-type sheets --resume --end-offset 1
+```
+*   --resume tells it to continue from the last date in Google Sheets.
+*   --end-offset 1 makes it stop at yesterday (to avoid syncing partial data from today).
+
+You can edit this script to run only one user, or change profiles/dates if needed.
+A sample LaunchAgent configuration file is included in this repository:
+com.garmingo.sync.plist
+
+Setup Instructions
+1.  Edit the plist file
+Open com.garmingo.sync.plist in a text editor and update the paths:
+*   Replace /Users/$USER/ with your actual macOS username if it doesn’t resolve automatically.
+*   Adjust the Hour and Minute values under <StartCalendarInterval> to the time you want the sync to run (default is 9:30 AM).
+2.  Copy it to LaunchAgents
+```
+mkdir -p ~/Library/LaunchAgents
+cp com.garmingo.sync.plist ~/Library/LaunchAgents/
+```
+3.  Load the LaunchAgent
+```
+launchctl load ~/Library/LaunchAgents/com.garmingo.sync.plist
+```
+To start it immediately (without waiting for the scheduled time):
+```
+launchctl start com.garmingo.sync
+```
+4. Check Logs
+*   Standard output is logged to /tmp/garmingo.log
+*   Errors are logged to /tmp/garmingo.err
+5.  Unload later (optional)
+    If you want to disable the automation:
+```
+launchctl unload ~/Library/LaunchAgents/com.garmingo.sync.plist
+```
+
 ### 🔑 Google API Setup (for Google Sheets Output)
 
 To send data to Google Sheets, you need to set up Google API credentials.
@@ -264,7 +308,7 @@ The tool syncs the following daily metrics from Garmin Connect:
 
 Want a metric added? Just raise an Issue and request it!
 
----
+---   
 
 ## 🛠️ Troubleshooting
 
