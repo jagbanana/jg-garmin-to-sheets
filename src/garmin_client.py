@@ -25,7 +25,7 @@ class GarminClient:
 
         try:
             def login_wrapper():
-                return self.client.login()
+                return self.client.login("~/.garth") # FIX: Passed "~/.garth" to force the client to load previously saved session tokens, bypassing the MFA prompt on subsequent runs.
             
             login_result = await asyncio.get_event_loop().run_in_executor(None, login_wrapper)
             
@@ -376,6 +376,7 @@ class GarminClient:
                 raise Exception("Critical error: Could not retrieve garth.Client instance from mfa_ticket_dict post MFA for token update.")
             
             self._authenticated = True
+            self.client.garth.dump("~/.garth") # FIX: Passed "~/.garth" to force the client to load previously saved session tokens, bypassing the MFA prompt on subsequent runs.
             self.mfa_ticket_dict = None # Clear the used MFA ticket dict
             logger.info("MFA verification successful. Garth client updated with authenticated instance.")
             return True
