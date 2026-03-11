@@ -19,7 +19,10 @@ from src.config import HEADERS, HEADER_TO_ATTRIBUTE_MAP, GarminMetrics
 logging.getLogger('google_auth_oauthlib.flow').setLevel(logging.WARNING)
 logging.getLogger("hpack").setLevel(logging.WARNING)
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+ )
 logger = logging.getLogger(__name__)
 
 app = typer.Typer()
@@ -153,14 +156,24 @@ def load_user_profiles():
             profiles[profile_name][key_map[var_type]] = value
     return profiles
 
-@app.command()
+@app.command("cli-sync")
 def cli_sync(
-    start_date: datetime = typer.Option(..., help="Start date in YYYY-MM-DD format."),
-    end_date: datetime = typer.Option(..., help="End date in YYYY-MM-DD format."),
+    start_date: str = typer.Option(..., help="Start date in YYYY-MM-DD format."),
+    end_date: str = typer.Option(..., help="End date in YYYY-MM-DD format."),
     profile: str = typer.Option("USER1", help="The user profile from .env to use (e.g., USER1)."),
     output_type: str = typer.Option("sheets", help="Output type: 'sheets' or 'csv'.")
 ):
     """Run the Garmin sync from the command line."""
+    
+    # Safely convert strings to date objects for the sync function
+    date_format = "%Y-%m-%d"
+    try:
+        s_date = datetime.strptime(start_date, date_format).date()
+        e_date = datetime.strptime(end_date, date_format).date()
+    except ValueError:
+        logger.error(f"Invalid date format. Please use {date_format}.")
+        sys.exit(1)
+
     user_profiles = load_user_profiles()
     selected_profile_data = user_profiles.get(profile)
 
@@ -178,12 +191,17 @@ def cli_sync(
     asyncio.run(sync(
         email=email,
         password=password,
-        start_date=start_date.date(),
-        end_date=end_date.date(),
+        start_date=s_date,
+        end_date=e_date,
         output_type=output_type,
         profile_data=selected_profile_data,
         profile_name=profile
     ))
+
+@app.command("interactive")
+def interactive_command():
+    """Dummy command to ensure Typer activates multi-command mode."""
+    asyncio.run(run_interactive_sync())
 
 async def run_interactive_sync():
     """Handles the interactive session to gather parameters and run the sync."""
@@ -283,9 +301,14 @@ def main():
     try:
         # Check if any CLI arguments were provided
         if len(sys.argv) > 1:
-            # CLI mode: use typer to parse arguments
+            # CLI mode: use typer to parse arguments (Cron uses this route)
             app()
         else:
+            # Cron Protection: Prevent background hanging if no arguments are passed
+            if not sys.stdin.isatty():
+                logger.error("Headless environment (Cron) detected, but no arguments were provided. Exiting.")
+                sys.exit(1)
+
             # Interactive mode: run the interactive session
             print("\nWelcome to GarminGo!")
             print("Let's help you make data-driven health and longevity decisions by grabbing your Garmin data.")

@@ -2,6 +2,7 @@ from datetime import date
 from typing import Dict, Any, Optional
 import asyncio
 import logging
+import os
 import garminconnect
 from garth.sso import resume_login
 import garth
@@ -12,57 +13,48 @@ logger = logging.getLogger(__name__)
 
 class GarminClient:
     def __init__(self, email: str, password: str):
+        self.email = email # Store for manual login
+        self.password = password # Store for manual login
         self.client = garminconnect.Garmin(email, password)
         self._authenticated = False
         self.mfa_ticket_dict = None
         self._auth_failed = False  # Track if authentication failed to prevent loops
 
     async def authenticate(self):
-        """Modified to handle non-async login method"""
-        # Store the garth client instance before attempting login, in case MFA is required
-        # and garminconnect overwrites self.client.garth with a dict.
-        initial_garth_client = self.client.garth
+        """Robust authentication that forces MFA flow on any handshake failure"""
+        token_dir = os.path.expanduser("~/.garth")
+
+        def login_wrapper():
+            # Try to resume if tokens exist
+            if os.path.exists(token_dir) and os.listdir(token_dir):
+                logger.info("Found existing tokens. Attempting resume...")
+                try:
+                    return self.client.login(token_dir)
+                except Exception as e:
+                    logger.warning(f"Resume failed: {e}. Starting fresh.")
+            
+            # Fresh login attempt
+            logger.info("Initiating fresh login handshake...")
+            return self.client.login()
 
         try:
-            def login_wrapper():
-                return self.client.login()
-            
-            login_result = await asyncio.get_event_loop().run_in_executor(None, login_wrapper)
-            
-            # If login_wrapper completes without raising an exception, it's a successful non-MFA login.
+            await asyncio.get_event_loop().run_in_executor(None, login_wrapper)
             self._authenticated = True
-            self.mfa_ticket_dict = None # Clear ticket on successful non-MFA login
+            self.client.garth.dump(token_dir)
+            logger.info("Authentication successful!")
 
-        except AttributeError as e:
-            if "'dict' object has no attribute 'expired'" in str(e):
-                logger.info("Caught AttributeError indicating MFA challenge.")
-                if hasattr(self.client.garth, 'oauth2_token') and isinstance(self.client.garth.oauth2_token, dict):
-                    self.mfa_ticket_dict = self.client.garth.oauth2_token # Capture the MFA state dictionary
-                    logger.info(f"MFA ticket (dict) captured: {self.mfa_ticket_dict}")
-                    raise MFARequiredException(message="MFA code is required.", mfa_data=self.mfa_ticket_dict)
-                else:
-                    logger.error("MFA detected via AttributeError, but self.client.garth.oauth2_token is not a dict. This is unexpected.")
-                    raise # Re-raise the original AttributeError
-            else:
-                # Re-raise if it's an AttributeError but not the specific MFA one
-                raise
-        except garminconnect.GarminConnectAuthenticationError as e:
-            # Catch specific GarminConnectAuthenticationError for clearer logging
-            if "MFA-required" in str(e) or "Authentication failed" in str(e): # Added "Authentication failed" as it can also indicate MFA
-                logger.info("Caught GarminConnectAuthenticationError indicating MFA challenge.")
-                if hasattr(self.client.garth, 'oauth2_token') and isinstance(self.client.garth.oauth2_token, dict):
-                    self.mfa_ticket_dict = self.client.garth.oauth2_token # Capture the MFA state dictionary
-                    logger.info(f"MFA ticket (dict) captured: {self.mfa_ticket_dict}")
-                    raise MFARequiredException(message="MFA code is required.", mfa_data=self.mfa_ticket_dict)
-                else:
-                    logger.error("MFA detected via GarminConnectAuthenticationError, but self.client.garth.oauth2_token is not a dict. This is unexpected.")
-                    raise # Re-raise the original GarminConnectAuthenticationError
-            else:
-                # Re-raise if it's an AuthenticationError but not the specific MFA one
-                raise
-        except Exception as e:
-            logger.error(f"An unexpected error occurred during authentication: {str(e)}")
-            raise garminconnect.GarminConnectAuthenticationError(f"An unexpected error occurred during authentication: {str(e)}") from e # Re-raise as GarminConnectAuthenticationError
+        except (Exception, AssertionError) as e:  # <--- WE NOW CATCH ASSERTION ERRORS SPECIFICALLY
+            logger.info(f"Handshake interrupted: {str(e)}")
+            
+            # Check if we have an MFA ticket in the garth client
+            if hasattr(self.client.garth, 'oauth2_token') and isinstance(self.client.garth.oauth2_token, dict):
+                self.mfa_ticket_dict = self.client.garth.oauth2_token
+                logger.info("MFA ticket detected. Raising MFARequiredException.")
+                raise MFARequiredException(message="MFA code is required.", mfa_data=self.mfa_ticket_dict)
+            
+            # If no ticket, it's a real login failure
+            logger.error(f"Login failed without MFA ticket: {e}")
+            raise garminconnect.GarminConnectAuthenticationError(f"Authentication failed: {e}")
 
     async def _fetch_hrv_data(self, target_date_iso: str) -> Optional[Dict[str, Any]]:
         """Fetches HRV data for the given date."""
@@ -376,6 +368,8 @@ class GarminClient:
                 raise Exception("Critical error: Could not retrieve garth.Client instance from mfa_ticket_dict post MFA for token update.")
             
             self._authenticated = True
+            token_dir = os.path.expanduser("~/.garth") # FIX: Passed "~/.garth" to force the client to load previously saved session tokens, bypassing the MFA prompt on subsequent runs.
+            self.client.garth.dump(token_dir)            
             self.mfa_ticket_dict = None # Clear the used MFA ticket dict
             logger.info("MFA verification successful. Garth client updated with authenticated instance.")
             return True

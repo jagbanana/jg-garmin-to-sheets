@@ -1,6 +1,7 @@
 # Sensitive files
 .env
 credentials/
+*.json
 *.pickle
 output/
 projectStatus.md
