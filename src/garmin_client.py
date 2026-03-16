@@ -216,6 +216,9 @@ class GarminClient:
             vo2max_cycling: Optional[float] = None
             training_status_phrase: Optional[str] = None
             steps: Optional[int] = None
+            acute_training_load: Optional[float] = None
+            chronic_training_load: Optional[float] = None
+            daily_training_load: Optional[float] = None
 
             # Process sleep data
             if sleep_data:
@@ -283,8 +286,13 @@ class GarminClient:
                 
                 if first_device: # Check if first_device is not None
                     training_status_phrase = first_device.get('trainingStatusFeedbackPhrase')
+                    daily_training_load = first_device.get('trainingLoad')
                 else:
                     training_status_phrase = None # Ensure it's None if no device data or first_device is None
+
+                load_balance = training_status.get('trainingLoadBalance', {}) or {}
+                acute_training_load = load_balance.get('acuteLoad')
+                chronic_training_load = load_balance.get('chronicLoad')
             else:
                 logger.warning(f"Training status data for {target_date} is None. VO2 Max and training status metrics will be blank.")
 
@@ -317,7 +325,10 @@ class GarminClient:
                 tennis_activity_duration=tennis_duration, # Added for Tennis
                 overnight_hrv=overnight_hrv_value,
                 hrv_status=hrv_status_value,
-                steps=steps
+                steps=steps,
+                acute_training_load=acute_training_load,
+                chronic_training_load=chronic_training_load,
+                daily_training_load=daily_training_load
             )
 
         except Exception as e:

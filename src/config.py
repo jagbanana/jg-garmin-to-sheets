@@ -34,6 +34,9 @@ class GarminMetrics:
     overnight_hrv: Optional[int] = None
     hrv_status: Optional[str] = None
     steps: Optional[int] = None
+    acute_training_load: Optional[float] = None
+    chronic_training_load: Optional[float] = None
+    daily_training_load: Optional[float] = None
     # TODO: To add a new attribute, just add it here!
 
 # 2. The Headers list defines the output order and names
@@ -45,7 +48,8 @@ HEADERS = [
     "Running Activity Count", "Running Distance (km)", "Cycling Activity Count",
     "Cycling Distance (km)", "Strength Activity Count", "Strength Duration",
     "Cardio Activity Count", "Cardio Duration",
-    "Tennis Activity Count", "Tennis Activity Duration", "Steps"
+    "Tennis Activity Count", "Tennis Activity Duration", "Steps",
+    "Acute Training Load", "Chronic Training Load", "Daily Training Load"
 ]
 
 # 3. The Map connects the Headers to the Dataclass attributes
@@ -77,7 +81,10 @@ HEADER_TO_ATTRIBUTE_MAP = {
     "HRV Status": "hrv_status",
     "Tennis Activity Count": "tennis_activity_count",
     "Tennis Activity Duration": "tennis_activity_duration",
-    "Steps": "steps"
+    "Steps": "steps",
+    "Acute Training Load": "acute_training_load",
+    "Chronic Training Load": "chronic_training_load",
+    "Daily Training Load": "daily_training_load"
 }
 
 ## Helper to get all attribute names from the dataclass
