@@ -175,6 +175,8 @@ class GarminClient:
             cardio_duration = 0
             tennis_count = 0
             tennis_duration = 0
+            swimming_count = 0
+            swimming_duration = 0
 
             if activities:
                 for activity in activities:
@@ -194,9 +196,12 @@ class GarminClient:
                     elif 'cardio' in type_key:
                         cardio_count += 1
                         cardio_duration += activity.get('duration', 0) / 60
-                    elif 'tennis' in type_key: # Added for Tennis
+                    elif 'tennis' in type_key:
                         tennis_count += 1
-                        tennis_duration += activity.get('duration', 0) / 60 # Convert seconds to minutes
+                        tennis_duration += activity.get('duration', 0) / 60
+                    elif 'swim' in type_key:
+                        swimming_count += 1
+                        swimming_duration += activity.get('duration', 0) / 60
             else:
                 logger.warning(f"Activities data for {target_date} is None. Activity metrics will be blank.")
 
@@ -216,6 +221,8 @@ class GarminClient:
             vo2max_cycling: Optional[float] = None
             training_status_phrase: Optional[str] = None
             steps: Optional[int] = None
+            body_battery_max: Optional[int] = None
+            body_battery_min: Optional[int] = None
             acute_training_load: Optional[float] = None
             chronic_training_load: Optional[float] = None
             daily_training_load: Optional[float] = None
@@ -254,6 +261,8 @@ class GarminClient:
                 resting_heart_rate = summary.get('restingHeartRate')
                 average_stress = summary.get('averageStressLevel')
                 steps = summary.get('totalSteps')
+                body_battery_max = summary.get('bodyBatteryHighestValue')
+                body_battery_min = summary.get('bodyBatteryLowestValue')
             else:
                 logger.warning(f"User summary data for {target_date} is None. Summary metrics will be blank.")
 
@@ -321,14 +330,18 @@ class GarminClient:
                 strength_duration=strength_duration,
                 cardio_activity_count=cardio_count,
                 cardio_duration=cardio_duration,
-                tennis_activity_count=tennis_count, # Added for Tennis
-                tennis_activity_duration=tennis_duration, # Added for Tennis
+                tennis_activity_count=tennis_count,
+                tennis_activity_duration=tennis_duration,
+                swimming_activity_count=swimming_count,
+                swimming_duration=swimming_duration,
                 overnight_hrv=overnight_hrv_value,
                 hrv_status=hrv_status_value,
                 steps=steps,
                 acute_training_load=acute_training_load,
                 chronic_training_load=chronic_training_load,
-                daily_training_load=daily_training_load
+                daily_training_load=daily_training_load,
+                body_battery_max=body_battery_max,
+                body_battery_min=body_battery_min
             )
 
         except Exception as e:

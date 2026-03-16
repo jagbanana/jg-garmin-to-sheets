@@ -37,6 +37,10 @@ class GarminMetrics:
     acute_training_load: Optional[float] = None
     chronic_training_load: Optional[float] = None
     daily_training_load: Optional[float] = None
+    swimming_activity_count: Optional[int] = None
+    swimming_duration: Optional[float] = None
+    body_battery_max: Optional[int] = None
+    body_battery_min: Optional[int] = None
     # TODO: To add a new attribute, just add it here!
 
 # 2. The Headers list defines the output order and names
@@ -49,7 +53,9 @@ HEADERS = [
     "Cycling Distance (km)", "Strength Activity Count", "Strength Duration",
     "Cardio Activity Count", "Cardio Duration",
     "Tennis Activity Count", "Tennis Activity Duration", "Steps",
-    "Acute Training Load", "Chronic Training Load", "Daily Training Load"
+    "Acute Training Load", "Chronic Training Load", "Daily Training Load",
+    "Swimming Activity Count", "Swimming Duration",
+    "Body Battery Max", "Body Battery Min"
 ]
 
 # 3. The Map connects the Headers to the Dataclass attributes
@@ -84,7 +90,11 @@ HEADER_TO_ATTRIBUTE_MAP = {
     "Steps": "steps",
     "Acute Training Load": "acute_training_load",
     "Chronic Training Load": "chronic_training_load",
-    "Daily Training Load": "daily_training_load"
+    "Daily Training Load": "daily_training_load",
+    "Swimming Activity Count": "swimming_activity_count",
+    "Swimming Duration": "swimming_duration",
+    "Body Battery Max": "body_battery_max",
+    "Body Battery Min": "body_battery_min"
 }
 
 ## Helper to get all attribute names from the dataclass
