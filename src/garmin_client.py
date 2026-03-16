@@ -177,12 +177,15 @@ class GarminClient:
             tennis_duration = 0
             swimming_count = 0
             swimming_duration = 0
+            activity_calories = 0
 
             if activities:
                 for activity in activities:
                     activity_type = activity.get('activityType', {})
                     type_key = activity_type.get('typeKey', '').lower()
                     parent_type_id = activity_type.get('parentTypeId')
+
+                    activity_calories += activity.get('calories', 0) or 0
 
                     if 'run' in type_key or parent_type_id == 1:  # 1 is running
                         running_count += 1
@@ -341,7 +344,8 @@ class GarminClient:
                 chronic_training_load=chronic_training_load,
                 daily_training_load=daily_training_load,
                 body_battery_max=body_battery_max,
-                body_battery_min=body_battery_min
+                body_battery_min=body_battery_min,
+                activity_calories=activity_calories if activities else None
             )
 
         except Exception as e:
