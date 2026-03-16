@@ -153,14 +153,27 @@ def load_user_profiles():
             profiles[profile_name][key_map[var_type]] = value
     return profiles
 
-@app.command()
+@app.command("cli-sync")
 def cli_sync(
-    start_date: datetime = typer.Option(..., help="Start date in YYYY-MM-DD format."),
-    end_date: datetime = typer.Option(..., help="End date in YYYY-MM-DD format."),
+    start_date: str = typer.Option(..., help="Start date in YYYY-MM-DD format."),
+    end_date: str = typer.Option(None, help="End date in YYYY-MM-DD format. Defaults to start date."),
     profile: str = typer.Option("USER1", help="The user profile from .env to use (e.g., USER1)."),
     output_type: str = typer.Option("sheets", help="Output type: 'sheets' or 'csv'.")
 ):
-    """Run the Garmin sync from the command line."""
+    """Run the Garmin sync from the command line (supports headless/cron use)."""
+    date_format = "%Y-%m-%d"
+    try:
+        parsed_start = datetime.strptime(start_date, date_format).date()
+    except ValueError:
+        logger.error(f"Invalid start date '{start_date}'. Expected format: {date_format}")
+        sys.exit(1)
+
+    try:
+        parsed_end = datetime.strptime(end_date, date_format).date() if end_date else parsed_start
+    except ValueError:
+        logger.error(f"Invalid end date '{end_date}'. Expected format: {date_format}")
+        sys.exit(1)
+
     user_profiles = load_user_profiles()
     selected_profile_data = user_profiles.get(profile)
 
@@ -178,8 +191,8 @@ def cli_sync(
     asyncio.run(sync(
         email=email,
         password=password,
-        start_date=start_date.date(),
-        end_date=end_date.date(),
+        start_date=parsed_start,
+        end_date=parsed_end,
         output_type=output_type,
         profile_data=selected_profile_data,
         profile_name=profile
@@ -281,10 +294,14 @@ def main():
         logger.warning(".env file not found. Please ensure it's in the root directory.")
     
     try:
-        # Check if any CLI arguments were provided
         if len(sys.argv) > 1:
             # CLI mode: use typer to parse arguments
             app()
+        elif not sys.stdin.isatty():
+            # Headless environment (e.g. cron) with no arguments — fail clearly
+            print("Headless environment detected, but no arguments were provided.")
+            print("Usage: python -m src.main cli-sync --start-date YYYY-MM-DD [--profile USER1]")
+            sys.exit(1)
         else:
             # Interactive mode: run the interactive session
             print("\nWelcome to GarminGo!")

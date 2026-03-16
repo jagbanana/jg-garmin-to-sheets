@@ -5,6 +5,7 @@ credentials/
 output/
 projectStatus.md
 .roo/
+.claude/
 
 # Python
 __pycache__/

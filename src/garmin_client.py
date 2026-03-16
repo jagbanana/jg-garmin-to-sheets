@@ -2,6 +2,7 @@ from datetime import date
 from typing import Dict, Any, Optional
 import asyncio
 import logging
+import os
 import garminconnect
 from garth.sso import resume_login
 import garth
@@ -18,7 +19,21 @@ class GarminClient:
         self._auth_failed = False  # Track if authentication failed to prevent loops
 
     async def authenticate(self):
-        """Modified to handle non-async login method"""
+        """Modified to handle non-async login method, with token persistence via ~/.garth."""
+        token_dir = os.path.expanduser("~/.garth")
+
+        # Try resuming from saved tokens first (skips full login + MFA)
+        if os.path.exists(token_dir):
+            try:
+                def load_tokens():
+                    self.client.login(tokenstore=token_dir)
+                await asyncio.get_event_loop().run_in_executor(None, load_tokens)
+                self._authenticated = True
+                logger.info("Resumed Garmin session from saved tokens in ~/.garth")
+                return
+            except Exception as e:
+                logger.info(f"Token resume failed ({e}), falling back to full login.")
+
         # Store the garth client instance before attempting login, in case MFA is required
         # and garminconnect overwrites self.client.garth with a dict.
         initial_garth_client = self.client.garth
@@ -26,12 +41,15 @@ class GarminClient:
         try:
             def login_wrapper():
                 return self.client.login()
-            
+
             login_result = await asyncio.get_event_loop().run_in_executor(None, login_wrapper)
-            
-            # If login_wrapper completes without raising an exception, it's a successful non-MFA login.
+
+            # Successful non-MFA login — save tokens for future headless runs
             self._authenticated = True
-            self.mfa_ticket_dict = None # Clear ticket on successful non-MFA login
+            self.mfa_ticket_dict = None
+            os.makedirs(token_dir, exist_ok=True)
+            self.client.garth.dump(token_dir)
+            logger.info(f"Saved Garmin session tokens to {token_dir}")
 
         except AttributeError as e:
             if "'dict' object has no attribute 'expired'" in str(e):
@@ -377,6 +395,13 @@ class GarminClient:
             
             self._authenticated = True
             self.mfa_ticket_dict = None # Clear the used MFA ticket dict
+
+            # Save tokens so future runs can skip MFA
+            token_dir = os.path.expanduser("~/.garth")
+            os.makedirs(token_dir, exist_ok=True)
+            self.client.garth.dump(token_dir)
+            logger.info(f"Saved Garmin session tokens to {token_dir}")
+
             logger.info("MFA verification successful. Garth client updated with authenticated instance.")
             return True
         except (garminconnect.GarminConnectAuthenticationError, garth.exc.GarthException) as e: # Corrected to GarthException

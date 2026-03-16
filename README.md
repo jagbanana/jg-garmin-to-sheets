@@ -164,19 +164,26 @@ For cleaner dependency management, you might want to create and activate a virtu
 
 ### Optional: Running as a Scheduled Task
 
-For users who wish to run GarminGo non-interactively (e.g., as a scheduled task), command-line arguments can be used. This allows you to specify the start date, end date, user profile, and output type directly.
+For users who wish to run GarminGo non-interactively (e.g., as a scheduled task or Docker/cron job), command-line arguments can be used.
+
+**❗ First-time setup required:** Run the app interactively at least once before scheduling it. On first run, GarminGo saves your Garmin session tokens to `~/.garth` on your machine. All subsequent scheduled runs will reuse these tokens automatically — no MFA prompts needed.
 
 After installing the project (see Step 3 in Quick Start), you can use the `garmingo` command:
 ```powershell
-garmingo cli-sync --start-date YYYY-MM-DD --end-date YYYY-MM-DD --profile YOUR_PROFILE_NAME --output-type <csv_or_sheets>
+garmingo cli-sync --start-date YYYY-MM-DD --profile YOUR_PROFILE_NAME --output-type <csv_or_sheets>
 ```
-Replace `YYYY-MM-DD` with the desired dates, `YOUR_PROFILE_NAME` with your configured profile name (e.g., `USER1`), and `<csv_or_sheets>` with either `csv` or `sheets`.
+`--end-date` is optional and defaults to `--start-date` if omitted (useful for daily cron jobs). Replace `YOUR_PROFILE_NAME` with your configured profile name (e.g., `USER1`) and `<csv_or_sheets>` with either `csv` or `sheets`.
 
 **Alternative:** If you haven't installed the project via `pip install .` or prefer to run it directly with Python:
 ```powershell
-python -m src.main cli-sync --start-date YYYY-MM-DD --end-date YYYY-MM-DD --profile YOUR_PROFILE_NAME --output-type <csv_or_sheets>
+python -m src.main cli-sync --start-date YYYY-MM-DD --profile YOUR_PROFILE_NAME --output-type <csv_or_sheets>
 ```
 Ensure you are in the project's root directory when using `python -m src.main`.
+
+**Example cron entry (Linux/macOS) — sync yesterday's data every morning at 6am:**
+```sh
+0 6 * * * cd /path/to/jg-garmin-to-sheets && garmingo cli-sync --start-date $(date -d yesterday +\%Y-\%m-\%d) --profile USER1
+```
 
 ### 🔑 Google API Setup (for Google Sheets Output)
 
@@ -280,6 +287,7 @@ Want a metric added? Just raise an Issue and request it!
         6.  **Important:** You must close and reopen any terminal windows (CMD, PowerShell) for the changes to take effect. Sometimes, a system restart might be needed.
     *   For **macOS/Linux** users, the scripts directory is often `~/.local/bin`. You would add this to your shell's configuration file (e.g., `~/.bashrc`, `~/.zshrc`, or `~/.profile`) by adding a line like `export PATH="$HOME/.local/bin:$PATH"`, and then sourcing the file (e.g., `source ~/.bashrc`) or opening a new terminal.
 *   **Garmin Login Issues:** Double-check `USER<N>_GARMIN_EMAIL` and `USER<N>_GARMIN_PASSWORD` in your `.env` file.
+*   **Scheduled/cron job fails with authentication error:** Your saved Garmin session tokens (in `~/.garth`) may have expired. Delete the `~/.garth` directory and run the app interactively once to re-authenticate and save fresh tokens.
 *   **Google Sheets Access Denied / Errors:**
     *   Ensure the Google Sheets API is enabled in your Google Cloud project.
     *   Verify the `USER<N>_SHEET_ID` in `.env` is correct and that the Google account you authorized has edit access to that specific Sheet.
