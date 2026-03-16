@@ -256,16 +256,17 @@ The tool syncs the following daily metrics from Garmin Connect:
 *   Weight
 *   Body Fat Percentage
 *   Blood Pressure (Systolic/Diastolic)
-*   Active/Resting Calories
+*   Active Calories / Resting Calories
+*   Activity Calories (from logged workouts)
 *   Resting Heart Rate
 *   Average Stress
 *   Training Status
 *   VO2 Max (Running/Cycling)
 *   Intensity Minutes
 *   Steps (Daily Step Count)
-*   Activity Counts and Distances/Durations (Running, Cycling, Strength, Cardio)
-*   Tennis Activity Count
-*   Tennis Activity Duration
+*   Activity Counts and Distances/Durations (Running, Cycling, Strength, Cardio, Tennis, Swimming)
+*   Training Load (Acute, Chronic, Daily)
+*   Body Battery (Daily Max/Min)
 
 *These metrics were chosen specifically because they relate to long-term health and longevity planning.*
 
