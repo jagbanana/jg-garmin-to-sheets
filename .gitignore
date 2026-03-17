@@ -6,6 +6,7 @@ output/
 projectStatus.md
 .roo/
 .claude/
+CLAUDE.md
 
 # Python
 __pycache__/

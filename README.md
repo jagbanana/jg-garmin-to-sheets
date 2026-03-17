@@ -1,4 +1,6 @@
-# 🚀 GarminGo: Make data-driven decisions about your health, fitness, and longevity! 📄📈
+**Major updates!** The March 16, 2026 includes major enhancements. The column headers are now changed, so if you have past data from GarminGo, it's best to discard that and pull everything fresh.
+
+# GarminGo: Make data-driven decisions about your health, fitness, and longevity!
 
 Pull your daily health metrics from Garmin Connect and save them directly to a user-friendly CSV file or Google Sheets.
 
@@ -247,26 +249,62 @@ To send data to Google Sheets, you need to set up Google API credentials.
 
 ## 📊 Available Metrics
 
-The tool syncs the following daily metrics from Garmin Connect:
+The tool syncs the following daily metrics from Garmin Connect, organized into logical groups:
 
-*   Sleep Score
-*   Sleep Length
-*   HRV (Overnight)
-*   HRV Status
-*   Weight
-*   Body Fat Percentage
-*   Blood Pressure (Systolic/Diastolic)
-*   Active Calories / Resting Calories
-*   Activity Calories (from logged workouts)
-*   Resting Heart Rate
-*   Average Stress
-*   Training Status
-*   VO2 Max (Running/Cycling)
-*   Intensity Minutes
-*   Steps (Daily Step Count)
-*   Activity Counts and Distances/Durations (Running, Cycling, Strength, Cardio, Tennis, Swimming)
-*   Training Load (Acute, Chronic, Daily)
-*   Body Battery (Daily Max/Min)
+**🛌 Recovery & Vitals**
+| Column | Description |
+|---|---|
+| Sleep Score | Garmin's overall sleep quality score |
+| Sleep Length | Total sleep duration |
+| HRV (ms) | Overnight heart rate variability |
+| HRV Status | Garmin's HRV status (e.g. Balanced, Unbalanced) |
+| Resting Heart Rate | Morning resting heart rate |
+| Body Battery Max | Peak body battery for the day |
+| Body Battery Min | Lowest body battery for the day |
+| Average Stress | Average stress level for the day |
+
+**⚖️ Body Composition**
+| Column | Description |
+|---|---|
+| Weight (kg) | Body weight |
+| Body Fat % | Body fat percentage |
+| Blood Pressure Systolic | Average of all systolic readings logged that day |
+| Blood Pressure Diastolic | Average of all diastolic readings logged that day |
+
+**🏃 Daily Activity & Energy**
+| Column | Description |
+|---|---|
+| Steps | Total steps |
+| Intensity Minutes | Moderate + 2× vigorous intensity minutes |
+| Active Calories | Calories burned during activity |
+| Resting Calories | Basal metabolic rate (BMR) calories |
+| Activity Calories | Calories from logged workouts |
+
+**💪 Fitness & Training**
+| Column | Description |
+|---|---|
+| VO2 Max Running | Estimated VO2 max for running |
+| VO2 Max Cycling | Estimated VO2 max for cycling |
+| Training Status | Training status phrase (e.g. Maintaining, Productive) |
+| Acute Training Load | Short-term training load (7-day weighted EPOC) |
+| Chronic Training Load | Long-term training load (28-day weighted average) |
+
+**🏅 Activities (per sport)**
+| Column | Description |
+|---|---|
+| All Activity Count | Total number of logged activities |
+| Running Activity Count | Number of runs |
+| Running Distance (km) | Total running distance |
+| Cycling Activity Count | Number of rides |
+| Cycling Distance (km) | Total cycling distance |
+| Swimming Activity Count | Number of swims |
+| Swimming Duration | Total swim time |
+| Strength Activity Count | Number of strength sessions |
+| Strength Duration | Total strength training time |
+| Cardio Activity Count | Number of cardio sessions |
+| Cardio Duration | Total cardio time |
+| Tennis Activity Count | Number of tennis sessions |
+| Tennis Activity Duration | Total tennis time |
 
 *These metrics were chosen specifically because they relate to long-term health and longevity planning.*
 

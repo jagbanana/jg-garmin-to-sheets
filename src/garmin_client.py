@@ -129,12 +129,22 @@ class GarminClient:
                     None, self.client.get_training_status, target_date.isoformat()
                 )
             
+            async def get_blood_pressure():
+                try:
+                    return await asyncio.get_event_loop().run_in_executor(
+                        None, self.client.get_blood_pressure,
+                        target_date.isoformat(), target_date.isoformat()
+                    )
+                except Exception as e:
+                    logger.warning(f"Error fetching blood pressure for {target_date}: {e}")
+                    return None
+
             async def get_hrv():
                 return await self._fetch_hrv_data(target_date.isoformat())
 
             # Fetch data concurrently
-            stats, sleep_data, activities, summary, training_status, hrv_payload = await asyncio.gather(
-                get_stats(), get_sleep(), get_activities(), get_user_summary(), get_training_status(), get_hrv()
+            stats, sleep_data, activities, summary, training_status, hrv_payload, bp_data = await asyncio.gather(
+                get_stats(), get_sleep(), get_activities(), get_user_summary(), get_training_status(), get_hrv(), get_blood_pressure()
             )
 
             # Debug logging
@@ -250,11 +260,23 @@ class GarminClient:
             else:
                 logger.warning(f"Stats data for {target_date} is None. Weight and body fat metrics will be blank.")
 
-            # Get blood pressure (if available)
-            if stats: # Already checked above, but for clarity
-                blood_pressure_systolic = stats.get('systolic')
-                blood_pressure_diastolic = stats.get('diastolic')
-            # No else needed, as they are initialized to None
+            # Get blood pressure: average all individual readings taken that day.
+            # Structure: bp_data['measurementSummaries'] is a list of daily summaries,
+            # each containing a 'measurements' list with the actual systolic/diastolic values.
+            blood_pressure_systolic = None
+            blood_pressure_diastolic = None
+            if bp_data:
+                all_readings = []
+                for day_summary in bp_data.get('measurementSummaries', []):
+                    all_readings.extend(day_summary.get('measurements', []))
+                if all_readings:
+                    sys_values = [r.get('systolic') for r in all_readings if r.get('systolic') is not None]
+                    dia_values = [r.get('diastolic') for r in all_readings if r.get('diastolic') is not None]
+                    if sys_values:
+                        blood_pressure_systolic = round(sum(sys_values) / len(sys_values))
+                    if dia_values:
+                        blood_pressure_diastolic = round(sum(dia_values) / len(dia_values))
+                    logger.debug(f"BP for {target_date}: {len(all_readings)} reading(s) — sys avg={blood_pressure_systolic}, dia avg={blood_pressure_diastolic}")
 
             # Get summary metrics
             if summary:
@@ -271,6 +293,8 @@ class GarminClient:
 
             # Get VO2 max values and training status
             if training_status:
+
+
                 vo2max_running = None
                 vo2max_cycling = None
                 most_recent_vo2max = training_status.get('mostRecentVO2Max')
@@ -278,33 +302,28 @@ class GarminClient:
                     generic_vo2max = most_recent_vo2max.get('generic')
                     if generic_vo2max:
                         vo2max_running = generic_vo2max.get('vo2MaxValue')
-                    
+
                     cycling_vo2max = most_recent_vo2max.get('cycling')
                     if cycling_vo2max:
                         vo2max_cycling = cycling_vo2max.get('vo2MaxValue')
 
-                training_status_data = {} # Initialize to empty dict
+                # All training status + load metrics live inside the first device entry
+                # under mostRecentTrainingStatus.latestTrainingStatusData
+                training_status_phrase = None
+                acute_training_load = None
+                chronic_training_load = None
+
                 most_recent_training_status = training_status.get('mostRecentTrainingStatus')
                 if most_recent_training_status:
-                    latest_training_status_data = most_recent_training_status.get('latestTrainingStatusData')
-                    if latest_training_status_data:
-                        training_status_data = latest_training_status_data
-                first_device = None
-                if training_status_data:
-                    # Get the first value from the dictionary, if any
-                    for value in training_status_data.values():
-                        first_device = value
-                        break # Take the first one and exit
-                
-                if first_device: # Check if first_device is not None
-                    training_status_phrase = first_device.get('trainingStatusFeedbackPhrase')
-                    daily_training_load = first_device.get('trainingLoad')
-                else:
-                    training_status_phrase = None # Ensure it's None if no device data or first_device is None
+                    latest_training_status_data = most_recent_training_status.get('latestTrainingStatusData') or {}
+                    for device_entry in latest_training_status_data.values():
+                        training_status_phrase = device_entry.get('trainingStatusFeedbackPhrase')
 
-                load_balance = training_status.get('trainingLoadBalance', {}) or {}
-                acute_training_load = load_balance.get('acuteLoad')
-                chronic_training_load = load_balance.get('chronicLoad')
+                        # Acute and Chronic load are nested inside acuteTrainingLoadDTO
+                        acute_dto = device_entry.get('acuteTrainingLoadDTO') or {}
+                        acute_training_load = acute_dto.get('dailyTrainingLoadAcute')
+                        chronic_training_load = acute_dto.get('dailyTrainingLoadChronic')
+                        break  # Use the first (primary) device entry
             else:
                 logger.warning(f"Training status data for {target_date} is None. VO2 Max and training status metrics will be blank.")
 
@@ -342,7 +361,6 @@ class GarminClient:
                 steps=steps,
                 acute_training_load=acute_training_load,
                 chronic_training_load=chronic_training_load,
-                daily_training_load=daily_training_load,
                 body_battery_max=body_battery_max,
                 body_battery_min=body_battery_min,
                 activity_calories=activity_calories if activities else None

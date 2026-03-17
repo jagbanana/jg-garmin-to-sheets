@@ -36,7 +36,6 @@ class GarminMetrics:
     steps: Optional[int] = None
     acute_training_load: Optional[float] = None
     chronic_training_load: Optional[float] = None
-    daily_training_load: Optional[float] = None
     swimming_activity_count: Optional[int] = None
     swimming_duration: Optional[float] = None
     body_battery_max: Optional[int] = None
@@ -46,18 +45,31 @@ class GarminMetrics:
 
 # 2. The Headers list defines the output order and names
 HEADERS = [
-    "Date", "Sleep Score", "Sleep Length", "HRV (ms)", "HRV Status", "Weight (kg)", "Body Fat %",
-    "Blood Pressure Systolic", "Blood Pressure Diastolic", "Active Calories",
-    "Resting Calories", "Resting Heart Rate", "Average Stress", "Training Status",
-    "VO2 Max Running", "VO2 Max Cycling", "Intensity Minutes", "All Activity Count",
-    "Running Activity Count", "Running Distance (km)", "Cycling Activity Count",
-    "Cycling Distance (km)", "Strength Activity Count", "Strength Duration",
-    "Cardio Activity Count", "Cardio Duration",
-    "Tennis Activity Count", "Tennis Activity Duration", "Steps",
-    "Acute Training Load", "Chronic Training Load", "Daily Training Load",
-    "Swimming Activity Count", "Swimming Duration",
+    "Date",
+    # Recovery & Vitals
+    "Sleep Score", "Sleep Length",
+    "HRV (ms)", "HRV Status",
+    "Resting Heart Rate",
     "Body Battery Max", "Body Battery Min",
-    "Activity Calories"
+    "Average Stress",
+    # Body Composition
+    "Weight (kg)", "Body Fat %",
+    "Blood Pressure Systolic", "Blood Pressure Diastolic",
+    # Daily Activity & Energy
+    "Steps", "Intensity Minutes",
+    "Active Calories", "Resting Calories", "Activity Calories",
+    # Fitness & Training
+    "VO2 Max Running", "VO2 Max Cycling",
+    "Training Status",
+    "Acute Training Load", "Chronic Training Load",
+    # Activities (per-sport)
+    "All Activity Count",
+    "Running Activity Count", "Running Distance (km)",
+    "Cycling Activity Count", "Cycling Distance (km)",
+    "Swimming Activity Count", "Swimming Duration",
+    "Strength Activity Count", "Strength Duration",
+    "Cardio Activity Count", "Cardio Duration",
+    "Tennis Activity Count", "Tennis Activity Duration",
 ]
 
 # 3. The Map connects the Headers to the Dataclass attributes
@@ -80,6 +92,7 @@ HEADER_TO_ATTRIBUTE_MAP = {
     "All Activity Count": "all_activity_count",
     "Running Activity Count": "running_activity_count",
     "Running Distance (km)": "running_distance",
+    "Cycling Activity Count": "cycling_activity_count",
     "Cycling Distance (km)": "cycling_distance",
     "Strength Activity Count": "strength_activity_count",
     "Strength Duration": "strength_duration",
@@ -92,7 +105,6 @@ HEADER_TO_ATTRIBUTE_MAP = {
     "Steps": "steps",
     "Acute Training Load": "acute_training_load",
     "Chronic Training Load": "chronic_training_load",
-    "Daily Training Load": "daily_training_load",
     "Swimming Activity Count": "swimming_activity_count",
     "Swimming Duration": "swimming_duration",
     "Body Battery Max": "body_battery_max",
