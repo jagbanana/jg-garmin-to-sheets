@@ -1,2 +1,0 @@
-[console_scripts]
-garmingo = src.main:main
