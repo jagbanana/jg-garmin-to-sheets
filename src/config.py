@@ -37,7 +37,7 @@ class GarminMetrics:
     acute_training_load: Optional[float] = None
     chronic_training_load: Optional[float] = None
     swimming_activity_count: Optional[int] = None
-    swimming_duration: Optional[float] = None
+    swimming_distance: Optional[float] = None
     body_battery_max: Optional[int] = None
     body_battery_min: Optional[int] = None
     activity_calories: Optional[int] = None
@@ -66,7 +66,7 @@ HEADERS = [
     "All Activity Count",
     "Running Activity Count", "Running Distance (km)",
     "Cycling Activity Count", "Cycling Distance (km)",
-    "Swimming Activity Count", "Swimming Duration",
+    "Swimming Activity Count", "Swimming Distance (km)",
     "Strength Activity Count", "Strength Duration",
     "Cardio Activity Count", "Cardio Duration",
     "Tennis Activity Count", "Tennis Activity Duration",
@@ -106,7 +106,7 @@ HEADER_TO_ATTRIBUTE_MAP = {
     "Acute Training Load": "acute_training_load",
     "Chronic Training Load": "chronic_training_load",
     "Swimming Activity Count": "swimming_activity_count",
-    "Swimming Duration": "swimming_duration",
+    "Swimming Distance (km)": "swimming_distance",
     "Body Battery Max": "body_battery_max",
     "Body Battery Min": "body_battery_min",
     "Activity Calories": "activity_calories"

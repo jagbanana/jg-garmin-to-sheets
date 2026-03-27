@@ -298,7 +298,7 @@ The tool syncs the following daily metrics from Garmin Connect, organized into l
 | Cycling Activity Count | Number of rides |
 | Cycling Distance (km) | Total cycling distance |
 | Swimming Activity Count | Number of swims |
-| Swimming Duration | Total swim time |
+| Swimming Distance (km) | Total swimming distance |
 | Strength Activity Count | Number of strength sessions |
 | Strength Duration | Total strength training time |
 | Cardio Activity Count | Number of cardio sessions |

@@ -186,7 +186,7 @@ class GarminClient:
             tennis_count = 0
             tennis_duration = 0
             swimming_count = 0
-            swimming_duration = 0
+            swimming_distance = 0
             activity_calories = 0
 
             if activities:
@@ -214,7 +214,7 @@ class GarminClient:
                         tennis_duration += activity.get('duration', 0) / 60
                     elif 'swim' in type_key:
                         swimming_count += 1
-                        swimming_duration += activity.get('duration', 0) / 60
+                        swimming_distance += activity.get('distance', 0) / 1000  # Convert to km
             else:
                 logger.warning(f"Activities data for {target_date} is None. Activity metrics will be blank.")
 
@@ -355,7 +355,7 @@ class GarminClient:
                 tennis_activity_count=tennis_count,
                 tennis_activity_duration=tennis_duration,
                 swimming_activity_count=swimming_count,
-                swimming_duration=swimming_duration,
+                swimming_distance=swimming_distance,
                 overnight_hrv=overnight_hrv_value,
                 hrv_status=hrv_status_value,
                 steps=steps,
