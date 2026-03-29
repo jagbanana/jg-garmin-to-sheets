@@ -1,4 +1,6 @@
-**Major updates!** The March 16, 2026 includes major enhancements. The column headers are now changed, so if you have past data from GarminGo, it's best to discard that and pull everything fresh.
+Garmin has blocked authentication, unfortunately stopping this project and many others. GarminGo relies on the garth authentication project. Due to Garmin's changes, the developer of garth has decided to stop maintaining it. See here: [https://github.com/matin/garth/issues/217](https://github.com/matin/garth/issues/217)
+
+Other authentication options are workarounds at best. I will continue to monitor this as it evolves.
 
 # GarminGo: Make data-driven decisions about your health, fitness, and longevity!
 
